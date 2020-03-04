@@ -19,7 +19,7 @@
                     doi:10.5194/amt-7-65-2014 (R. M. Stauffer)
 '''
 
-from scipy.optimize import fsolve, brentq, least_squares
+from scipy.optimize import fsolve
 from numpy import sin, sqrt, exp, radians
 
 # constants
@@ -33,7 +33,7 @@ e0 = 6.112       # the vapor pressure at 273.15K (hPa)
 TK = 273.15      # 
 
 def calc_p(lat, h, h_lower, t, t_lower, rh, rh_lower, p_lower):
-    g_lat = 9.7803267714 * (1+0.00193185138639*(sin(radians(lat)))**2) / sqrt((1-0.00669437999013*(sin(radians(lat)))**2))
+    g_lat = 9.7803267714 * (1+0.00193185138639*sin(radians(lat))**2) / sqrt((1-0.00669437999013*sin(radians(lat))**2))
     g_h = g_lat + G*Me/(Re+h)**2 - G*Me/Re**2
     # es = e0 * exp(L/Rv*(1/T0 - 1/T))
     # es = e0 * exp((L/Rv)*(1/TK-1/(t+TK)))
