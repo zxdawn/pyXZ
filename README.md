@@ -8,9 +8,17 @@
 
 Python Scripts in My Meteorological Research Life (2020 - )
 
+- XZ_flights
+
+  Reading and plotting flight data
+
 - XZ_maps
 
   Shapefiles used in plotting maps
+
+- XZ_model
+
+  Dealing with model data, especially WRF-Chem output files
 
 - XZ_satpy
 
@@ -18,4 +26,4 @@ Python Scripts in My Meteorological Research Life (2020 - )
 
 - XZ_sonde
 
-  Scripts of reading sonde data
+  Reading and plotting sonde data
