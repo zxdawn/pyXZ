@@ -191,7 +191,7 @@ def get_vert_data(TSfile, model_start, get_this_time, model_timestep=2,
     if model_start == get_this_time:
         print ("called the first time", model_start == get_this_time)
         row_number = 2
-    print ('line:', row_number)
+    # print ('line:', row_number)
 
     # Read the line then load into a numpy array
     # (don't return the zeroth column which is just the time)
