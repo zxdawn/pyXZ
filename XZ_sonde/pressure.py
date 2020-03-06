@@ -56,3 +56,14 @@ def calc_p(lat, h, h_lower, t, t_lower, rh, rh_lower, p_lower):
     p = fsolve(f, p_lower)
 
     return p
+
+def correct_p(profile):
+    for index, p in profile['PR'].items():
+        if index > 0:
+            profile['PR'][index] = calc_p(profile['lat'][index],
+                                        profile['h'][index], profile['h'][index-1],
+                                        profile['T'][index], profile['T'][index-1],
+                                        profile['rh'][index], profile['rh'][index-1],
+                                        profile['PR'][index-1])
+
+    return profile
