@@ -46,37 +46,37 @@ def add_grid(ax, projection,
     if ylabel_color:
         gl.ylabel_color = {'color': ylabel_color}
 
-def load_china(projection):
+def load_china(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/china_country.shp'
 
     return add_shape(source, projection)
 
-def load_simplified_china(projection):
+def load_simplified_china(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/simplied_china_country.shp'
 
     return add_shape(source, projection)
 
-def load_province(projection):
+def load_province(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/china_province.shp'
 
     return add_shape(source, projection)
 
-def load_city(projection):
+def load_city(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/china_city.shp'
 
     return add_shape(source, projection)
 
-def load_china_county_level_city(projection):
+def load_china_county_level_city(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/china_county-level_city.shp'
 
     return add_shape(source, projection)
 
-def load_china_nine_dotted_line(projection):
+def load_china_nine_dotted_line(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/china_nine_dotted_line.shp'
 
