@@ -8,7 +8,7 @@
 '''
 import xarray as xr
 from netCDF4 import Dataset
-from wrf import getvar, ALL_TIMES
+from wrf import getvar, latlon_coords, ALL_TIMES
 from pyresample.geometry import AreaDefinition, SwathDefinition
 
 class read_wps(object):
@@ -47,17 +47,23 @@ class read_wps(object):
         self.area = AreaDefinition.from_circle(area_id, proj_dict, center, radius, shape=shape)
 
 class read_wrf(object):
-    def __init__(self, wrf_path, fname, vname=None):
-        self.get_info(wrf_path, fname, vname)
+    def __init__(self, wrf_path, fname, vnames=None):
+        self.get_info(wrf_path, fname, vnames)
 
-    def get_info(self, wrf_path, fname, vname):
+    def get_info(self, wrf_path, fname, vnames):
         # self.wrf = xr.open_dataset(wrf_path+fname)._file_obj.ds
         self.ds = Dataset(wrf_path+fname)
         
         # check vname and read all of them
         self.dv = {}
-        if isinstance(vname, str):
-            self.dv.update({vname : getvar(self.ds, vname, timeidx=ALL_TIMES)})
-        elif isinstance(vname, list):
-            for v in vname:
-                self.dv.update({vname : getvar(self.ds, v, timeidx=ALL_TIMES)})
+        if isinstance(vnames, str):
+            self.dv.update({vnames : getvar(self.ds, vnames, timeidx=ALL_TIMES)})
+            if vnames != 'Times' and 'lon' not in self.dv:
+                self.dv.update({'lat': latlon_coords(self.dv[vnames])[0]})
+                self.dv.update({'lon': latlon_coords(self.dv[vnames])[1]})
+        elif isinstance(vnames, list):
+            for index,v in enumerate(vnames):
+                self.dv.update({v : getvar(self.ds, v, timeidx=ALL_TIMES)})
+                if v != 'Times' and 'lon' not in self.dv:
+                    self.dv.update({'lat' : latlon_coords(self.dv[v])[0]})
+                    self.dv.update({'lon': latlon_coords(self.dv[v])[1]})
