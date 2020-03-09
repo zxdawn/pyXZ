@@ -49,35 +49,47 @@ def add_grid(ax, projection,
 def load_china(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/china_country.shp'
+    elif platform.system() == 'Linux':
+        source = '/yin_raid/xin/github/pyXZ/XZ_maps/shapefiles/cnmap/china_country.shp'
 
     return add_shape(source, projection)
 
 def load_simplified_china(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/simplied_china_country.shp'
+    elif platform.system() == 'Linux':
+        source = '/yin_raid/xin/github/pyXZ/XZ_maps/shapefiles/cnmap/simplied_china_country.shp'
 
     return add_shape(source, projection)
 
 def load_province(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/china_province.shp'
+    elif platform.system() == 'Linux':
+        source = '/yin_raid/xin/github/pyXZ/XZ_maps/shapefiles/cnmap/china_province.shp'
 
     return add_shape(source, projection)
 
 def load_city(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/china_city.shp'
+    elif platform.system() == 'Linux':
+        source = '/yin_raid/xin/github/pyXZ/XZ_maps/shapefiles/cnmap/china_city.shp'
 
     return add_shape(source, projection)
 
 def load_china_county_level_city(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/china_county-level_city.shp'
+    elif platform.system() == 'Linux':
+        source = '/yin_raid/xin/github/pyXZ/XZ_maps/shapefiles/cnmap/china_county-level_city.shp'
 
     return add_shape(source, projection)
 
 def load_china_nine_dotted_line(projection=ccrs.PlateCarree()):
     if platform.system() == 'Windows':
         source = 'D:/Github/pyXZ/XZ_maps/shapefiles/cnmap/china_nine_dotted_line.shp'
+    elif platform.system() == 'Linux':
+        source = '/yin_raid/xin/github/pyXZ/XZ_maps/shapefiles/cnmap/china_nine_dotted_line.shp'
 
     return add_shape(source, projection)
