@@ -51,4 +51,4 @@ Mapping MEIC nc files to WRF-Chem chemistry (MOZCART)
 
 ## Example
 
-<img src="https://github.com/zxdawn/pyXZ/raw/master/XZ_model/MEIC/emission_example.jpg" width="400">
+<img src="https://github.com/zxdawn/pyXZ/raw/master/XZ_model/MEIC/emission_example.png" width="400">
