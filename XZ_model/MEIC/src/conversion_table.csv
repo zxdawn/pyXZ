@@ -8,7 +8,7 @@
 #    <SOLID>: 1: SOLID; 0: not SOLID
 #    <MW>: Molecular Weight of species. 1 for species which are VOC and SOLID
 #
-MOZART     , CB05 , RADM2    , SAPRC99 , SAPRC07, ALL      , WEIGHT , SOLID, VOC, MW
+MOZCART     , CB05 , RADM2    , SAPRC99 , SAPRC07, ALL      , WEIGHT , SOLID, VOC, MW
 E_C10H16   , TERP ,          ,         ,        ,          , 1      , 0    , 1  , 1
 E_C2H5OH   , ETOH ,          ,         ,        ,          , 1      , 0    , 1  , 1
 E_MEK      ,      , KET      ,         ,        ,          , 1      , 0    , 1  , 1
