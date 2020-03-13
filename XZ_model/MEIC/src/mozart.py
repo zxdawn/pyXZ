@@ -18,6 +18,11 @@ Steps:
     3. Resample self.emi to WRF area, write attributes,
         and assign to self.chemi[species]
     4. Export self.chemi to two 12-hour netCDF files.
+
+Currently, this script just supports MOZCART mechanism.
+If you want to apply to other mechanisms, you need to edit:
+    1. conversion_table_dtype (below);
+    2. conversion_table.csv
 '''
 
 import os
@@ -54,6 +59,17 @@ mm = 7
 dd = 25
 
 # ------------- #
+conversion_table_dtype = {'MOZCART': str,
+                          'CB05': str,
+                          'RADM2': str,
+                          'SAPRC99': str,
+                          'SAPRC07': str,
+                          'ALL': str,
+                          'WEIGHT': np.float64,
+                          'SOLID': np.int,
+                          'VOC': np.int,
+                          'MW': np.int,
+                          }
 
 # Please don't change the following paras
 minhour = 0
@@ -113,21 +129,10 @@ class meic(object):
         '''
         # read conversion table
         df = pd.read_csv('./conversion_table.csv',
-                         # skiprows=6,
                          sep=' *, *', # delete spaces
                          comment='#',
                          engine="python",
-                         dtype={'MOZART': str,
-                                'CB05': str,
-                                'RADM2': str,
-                                'SAPRC99': str,
-                                'SAPRC07': str,
-                                'ALL': str,
-                                'WEIGHT': np.float64,
-                                'SOLID': np.int,
-                                'VOC': np.int,
-                                'MW': np.int,
-                         })
+                         dtype=conversion_table_dtype)
         
         # iterate through MEIC mechanisms
         for col in df.columns[1:-4]:
@@ -222,7 +227,7 @@ class meic(object):
                         weight*1e12/(seconds*\
                         np.tile(self.emi_area.ravel(),
                                 (ds['z'].shape[0], 1)))
-            ds.attrs['units'] = 'ug/m3 m/s'
+            ds['z'].attrs['units'] = 'ug/m3 m/s'
         elif voc:
             # WRF-Chem unit: mol km-2 hr-1
             # MEIC unit: 10**5 mol/(grid*month)
@@ -230,7 +235,7 @@ class meic(object):
                         weight*1e5/(hours*\
                         np.tile(self.emi_area.ravel()/1e6,
                             (ds['z'].shape[0], 1)))
-            ds.attrs['units'] = 'mol km^-2 hr^-1'
+            ds['z'].attrs['units'] = 'mol km^-2 hr^-1'
         else:
             # WRF-Chem unit: mol km-2 hr-1
             # MEIC unit: tg/(grid*month)
@@ -238,7 +243,7 @@ class meic(object):
                         weight*1e6/(hours*mw*\
                         np.tile(self.emi_area.ravel()/1e6,
                             (ds['z'].shape[0], 1)))
-            ds.attrs['units'] = 'mol km^-2 hr^-1'
+            ds['z'].attrs['units'] = 'mol km^-2 hr^-1'
 
         # read hourly factor table
         try:
@@ -266,7 +271,8 @@ class meic(object):
         # we need to flip because of the "strange" order
         #   of 1d array in MEIC nc file.
         ds[name] = xr.DataArray(np.flip(table.dot(ds['z']).values.reshape((-1, ydim, xdim)), (1)),
-                                     dims=['time', 'y' , 'x']
+                                     dims=['time', 'y' , 'x'],
+                                     attrs=ds['z'].attrs
                                      )
 
         # drop old dims
@@ -359,7 +365,7 @@ class meic(object):
                             'description': vname,
                             'stagger': '',
                             'coordinates': 'XLONG XLAT',
-                            'units': self.emi.attrs['units']
+                            'units': self.emi[vname].attrs['units']
                            }
 
                 self.chemi[vname] = self.chemi[vname].assign_attrs(v_attrs)

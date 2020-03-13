@@ -41,4 +41,4 @@ for index, key in enumerate(species):
                label=ds[key].attrs['units'],
                tickminor=False)
 
-f.savefig('emission_example.png')
+f.savefig('../emission_example.png')
