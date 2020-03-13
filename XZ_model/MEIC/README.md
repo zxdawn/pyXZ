@@ -32,17 +32,25 @@ Mapping MEIC nc files to WRF-Chem chemistry (MOZCART)
 
   ├     ├── ├── \<yyyy\>_\<mm\>\_\_agriculture\_\_CB05*.nc
 
+  ├     ├── ├── \<yyyy\>_\<mm\>\_\_***
+
   ├     ├── RADM2
 
   ├     ├── ├── \<yyyy\>_\<mm\>\_\_agriculture\_\_RAMD2*.nc
 
+  ├     ├── ├── \<yyyy\>_\<mm\>\_\_***
+
   ├     ├── SAPRC07
 
   ├     ├── ├── \<yyyy\>_\<mm\>\_\_agriculture\_\_SAPRC07*.nc
-
+  
+  ├     ├── ├── \<yyyy\>_\<mm\>\_\_***
+  
   ├     ├── SAPRC99
-
+  
   ├     ├── ├── \<yyyy\>_\<mm\>\_\_agriculture\_\_SAPRC99*.nc
+  
+  ├     ├── ├── \<yyyy\>_\<mm\>\_\_***
 
 ### output files
 
