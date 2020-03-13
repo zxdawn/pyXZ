@@ -6,7 +6,7 @@ Mapping MEIC nc files to WRF-Chem chemistry (MOZCART)
 
 ### src
 
-- mozart.py
+- mozcart.py
 
   Main script of data processing.
 
