@@ -1,0 +1,23 @@
+name: pyXZ
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7
+  # base
+  - numpy
+  - matplotlib
+  - pandas
+  - scipy
+  # scientific data
+  - netcdf4
+  - xarray
+  - h5py
+  - dask
+  # map and plot
+  - cartopy
+  - pyproj
+  - proplot
+  # others
+  - satpy
+  - metpy
+  - wrf-python
