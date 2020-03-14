@@ -1,6 +1,6 @@
 '''
 INPUT:
-    wrfinput_d<domain>
+    geo_em.d<domain>
     MEIC input files
 
 OUTPUT:
@@ -33,10 +33,8 @@ import xarray as xr
 import numpy as np
 from glob import glob
 from time import strftime
-from netCDF4 import Dataset
 from calendar import monthrange
 from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
 from pyresample.geometry import AreaDefinition, SwathDefinition
 from pyresample.kd_tree import resample_nearest, resample_custom
 
@@ -271,7 +269,7 @@ class meic(object):
         # we need to flip because of the "strange" order
         #   of 1d array in MEIC nc file.
         ds[name] = xr.DataArray(np.flip(table.dot(ds['z']).values.reshape((-1, ydim, xdim)), (1)),
-                                     dims=['time', 'y' , 'x'],
+                                     dims=['time', 'y', 'x'],
                                      attrs=ds['z'].attrs
                                      )
 
@@ -354,10 +352,11 @@ class meic(object):
                 #       convert-a-list-of-2d-numpy-arrays-to-one-3d-numpy-array
                 # we also need to flip the 3d array,
                 #    because of the "strange" order of 1d array in MEIC nc file
-                resampled_data = np.flip(np.rollaxis(np.dstack(resampled_list), -1), 1)
+                #    then add another dimension for zdim.
+                resampled_data = np.flip(np.rollaxis(np.dstack(resampled_list), -1), 1)[:, np.newaxis, ...]
                 # assign to self.chemi with dims
                 self.chemi[vname] = xr.DataArray(resampled_data,
-                                       dims=['Time', 'south_north', 'west_east'])
+                                       dims=['Time', 'emissions_zdim','south_north', 'west_east'])
 
                 # add attrs needed by WRF-Chem
                 v_attrs = {'FieldType': 104,
