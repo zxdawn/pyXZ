@@ -57,6 +57,41 @@ Mapping MEIC nc files to WRF-Chem chemistry (MOZCART)
 - wrfchemi\_00z\_d<domain>
 - wrfchemi\_12z\_d<domain>
 
+## Usage
+
+1. Put input files like above
+
+2. Edit several paras:
+
+   ```
+   domain = 'd01'
+   resample_method='nearest' #nearest or idw
+   
+   # emission year
+   yyyy_emi = 2016
+   # simulated date
+   # emissions of any day in the month are same
+   yyyy = 2019
+   mm = 7
+   dd = 25
+   ```
+
+3. Run the main script:
+
+   ```
+   python mozcart.py
+   ```
+
+4. Check the log and output files.
+
 ## Example
+
+Quick look of one time stamp.
+
+```
+python plot_wrfchemi.py
+```
+
+Sample file:
 
 <img src="https://github.com/zxdawn/pyXZ/raw/master/XZ_model/MEIC/emission_example.png" width="900">
