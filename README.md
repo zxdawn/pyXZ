@@ -14,11 +14,11 @@ Python Scripts in My Meteorological Research Life (2020 - )
 
 - XZ_maps
 
-  Shapefiles used in plotting maps
+  Reading and plotting maps and shapefiles
 
 - XZ_model
 
-  Dealing with model data, especially WRF-Chem output files
+  Processing emission and model data, especially for WRF-Chem
 
 - XZ_satpy
 
