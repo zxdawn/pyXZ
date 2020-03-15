@@ -228,9 +228,9 @@ class meic(object):
             ds['z'].attrs['units'] = 'ug/m3 m/s'
         elif voc:
             # WRF-Chem unit: mol km-2 hr-1
-            # MEIC unit: 10**5 mol/(grid*month)
+            # MEIC unit: 10**6 mol/(grid*month)
             ds['z'] = ds['z'].where(valid, 0.)*\
-                        weight*1e5/(hours*\
+                        weight*1e6/(hours*\
                         np.tile(self.emi_area.ravel()/1e6,
                             (ds['z'].shape[0], 1)))
             ds['z'].attrs['units'] = 'mol km^-2 hr^-1'
