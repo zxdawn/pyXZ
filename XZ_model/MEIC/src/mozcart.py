@@ -39,8 +39,8 @@ from pyresample.geometry import AreaDefinition, SwathDefinition
 from pyresample.kd_tree import resample_nearest, resample_custom
 
 # Choose the following line for info or debugging:
-logging.basicConfig(level=logging.INFO)
-# logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 # --- input --- #
 data_path = '../input_files/'
@@ -145,17 +145,7 @@ class meic(object):
             #   we need the index in other variables
             species = df[col].dropna()#.reset_index(drop=True)
 
-            for index,s in enumerate(species):
-                logging.info (' '*4+'Reading '+s+' species ....')
-                pattern = emi_path+'*_'+s+'.nc'
-                # len of filelist should be 5 in sequence:
-                #       agriculture, industry, power, residential and transportation
-                files = sorted(glob(pattern))
-                # sum all sources for the specific species
-                ds = xr.open_mfdataset(files,
-                                       concat_dim='kind',
-                                       combine='nested')
-
+            for index,spec in enumerate(species):
                 # get variables related to desired chemical mechanism
                 name   = df[df.columns[0]][species.index[index]]
                 weight = df['WEIGHT'][species.index[index]]
@@ -166,15 +156,33 @@ class meic(object):
                 logging.info (' '*8+'Map to '+name+' species')
                 emi_exist = hasattr(self, 'emi')
 
-                # just read lon/lat once
-                if not emi_exist:
-                    self.calc_area(ds)
-                    self.emi = self.get_ds(ds, name, weight, solid, mw, voc)
-                else:
-                    self.emi[name] = self.get_ds(ds, name, weight, solid, mw, voc)[name]
+                for index_s,s in enumerate(spec.split('+')):
+                    logging.info (' '*10+'Reading '+s+' species ....')
+                    pattern = emi_path+'*_'+s+'.nc'
+                    # len of filelist should be 5 in sequence:
+                    #       agriculture, industry, power, residential and transportation
+                    files = sorted(glob(pattern))
+                    # sum all sources for the specific species
+                    ds = xr.open_mfdataset(files,
+                                           concat_dim='kind',
+                                           combine='nested')
 
-                # assign filenames to attrs
-                ds.attrs['filenames'] = files
+                    if not emi_exist:
+                        # just read lon/lat once
+                        self.calc_area(ds)
+                        self.emi = self.get_ds(ds, name, weight, solid, mw, voc)
+                    else:
+                        if len(spec) > 1 and index_s > 0:
+                            # like spec_a+spec_b+...
+                            self.emi[name] += self.get_ds(ds, name, weight, solid, mw, voc)[name]
+                        else:
+                            self.emi[name] = self.get_ds(ds, name, weight, solid, mw, voc)[name]
+
+                logging.debug(' '*8 \
+                               + ' min: ' + str(self.emi[name].min().values) \
+                               + ' max: ' + str(self.emi[name].max().values) \
+                               + ' mean '+ str(self.emi[name].mean().values)
+                      )
 
     def calc_area(self, ds):
         '''
@@ -288,11 +296,6 @@ class meic(object):
                                        dims=['y', 'x'])
 
         ds.attrs.pop('title')
-        logging.debug(' '*8 \
-                       + ' min: ' + str(ds[name].min().values) \
-                       + ' max: ' + str(ds[name].max().values) \
-                       + ' mean '+ str(ds[name].mean().values)
-                      )
 
         return ds
 
