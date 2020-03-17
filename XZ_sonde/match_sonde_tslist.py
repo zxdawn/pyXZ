@@ -79,7 +79,7 @@ def get_sonde_indices(tslist_path, wrf_path, wrf_file, domain, sonde_profile):
             Because we just need the head info, use 1000 to subset the initial wrfout* file.
             wrfpython needs XLONG,XLAT,XTIME.
     '''
-    wrf = read_wrf(wrf_path, wrf_file, vname=None)
+    wrf = read_wrf(wrf_path, wrf_file, vnames=None)
     station_xs, station_ys = sonde_in_wrf(sonde_profile, wrf, coords='xy', unique=False)
 
     return station_xs, station_ys, headers
