@@ -1,8 +1,9 @@
 '''
 INPUT:
     EMC data:
-        china_sites_<>
-    MEIC input files
+        china_sites_<yyyymmdd>.csv
+    WRF-Chem data:
+        wrfout*
 
 OUTPUT:
     One figure of the comparison between
