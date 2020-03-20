@@ -47,7 +47,7 @@ mw = {vnames[0]: 48,
 
 emc_path = '/yin_raid/xin/github/pyXZ/XZ_model/data/emc/'
 station_file = 'station_list.csv'
-bad_stations = ['1158A']
+bad_stations = ['1153A']
 
 output_dir = './figures/comparisons/'
 output_name = 'comp_chem_emc.png'
@@ -103,7 +103,7 @@ def read_station(file, station_crop):
 
     return df
 
-def get_emcvars(emc, wrf, stations, bad_stations, vnames, cols, date_hourly):
+def get_emcvars(emc, wrf, stations, vnames, cols, date_hourly, bad_stations=None):
     '''
     Get variables from emc data
     '''
@@ -111,8 +111,9 @@ def get_emcvars(emc, wrf, stations, bad_stations, vnames, cols, date_hourly):
     for vname in vnames:
         df = emc[emc.type == vname.upper()][cols]
         # drop "bad" data
-        df = df.drop(columns=bad_stations)
-        stations = stations[~stations['code'].isin(bad_stations)]
+        if bad_stations:
+            df = df.drop(columns=bad_stations)
+            stations = stations[~stations['code'].isin(bad_stations)]
         # get lon/lat of selected stations
         selected = df.columns[2:]
         locs = stations.loc[stations['code'] == selected, ['longitude', 'latitude']].values
@@ -231,8 +232,8 @@ def plot_lines(emc_dict, wrf_dict, stations, type='mean', loc=True):
         x     = y_wrf.coords['Time']
 
         # get station codes
-        codes = stations[stations['longitude'].\
-                    isin(emc_dict[key]['longitude'])]['code'].values
+        codes = stations.set_index('longitude').loc[emc_dict[key]['longitude']]\
+                        .reset_index(inplace=False)['code'].values
 
         # plot lines
         if type == 'station':
@@ -290,7 +291,7 @@ def main():
     stations = read_station(emc_path+station_file, station_crop)
     emc, date_hourly = read_emc(t)
     cols = ['date','hour']+stations['code'].tolist()
-    emc_dict = get_emcvars(emc, wrf, stations, bad_stations, vnames, cols, date_hourly)
+    emc_dict = get_emcvars(emc, wrf, stations, vnames, cols, date_hourly, bad_stations)
 
     # get stations' lon/lat, in case we need it to plot stations
     station_locs = {}
