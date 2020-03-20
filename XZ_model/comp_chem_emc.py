@@ -47,6 +47,7 @@ mw = {vnames[0]: 48,
 
 emc_path = '/yin_raid/xin/github/pyXZ/XZ_model/data/emc/'
 station_file = 'station_list.csv'
+# optional: put bad station codes in the list
 bad_stations = []
 
 output_dir = './figures/comparisons/'
