@@ -47,7 +47,7 @@ mw = {vnames[0]: 48,
 
 emc_path = '/yin_raid/xin/github/pyXZ/XZ_model/data/emc/'
 station_file = 'station_list.csv'
-bad_stations = ['1153A']
+bad_stations = []
 
 output_dir = './figures/comparisons/'
 output_name = 'comp_chem_emc.png'
