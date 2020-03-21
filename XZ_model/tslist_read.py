@@ -7,7 +7,7 @@
  UPDATE:
    Brian Blaylock:
         12/04/2015: Basic
-   
+
    Xin Zhang:
         02/20/2020: modified for more variables
                     and simplify some codes
@@ -22,6 +22,7 @@ WRFV3/run/README.tslist
 
 import linecache
 import numpy as np
+
 
 def get_ts_header(TSfile):
     """
@@ -40,9 +41,9 @@ def get_ts_header(TSfile):
             grid_indices = tuple of the grid indices. Location on domain.
             grid_latlon  = list of the grid latitude and longitude
             grid_elev    = float of the grid elevation
-            elev_units   = units of the elevation 
+            elev_units   = units of the elevation
     """
-    line = linecache.getline(TSfile,1)
+    line = linecache.getline(TSfile, 1)
 
     name = line[0:25]
     gridID1 = line[26:29]
@@ -57,14 +58,14 @@ def get_ts_header(TSfile):
     grid_elev = line[88:94]
     elev_units = line[95:]
 
-    header_dict = {'stn_name' : name.strip(),
-                   'grid_id' : (int(gridID1), int(gridID2)),
-                   'stn_id' : stnID.strip(),
-                   'stn_latlon' : [float(stnlat), float(stnlon)],
-                   'grid_indices' : (int(gridindx1), int(gridindx2)),
-                   'grid_latlon' : [float(gridlat), float(gridlon)],
-                   'grid_elev' : float(grid_elev),
-                   'elev_units' : elev_units.strip()}
+    header_dict = {'stn_name': name.strip(),
+                   'grid_id': (int(gridID1), int(gridID2)),
+                   'stn_id': stnID.strip(),
+                   'stn_latlon': [float(stnlat), float(stnlon)],
+                   'grid_indices': (int(gridindx1), int(gridindx2)),
+                   'grid_latlon': [float(gridlat), float(gridlon)],
+                   'grid_elev': float(grid_elev),
+                   'elev_units': elev_units.strip()}
 
     return header_dict
 
@@ -110,8 +111,8 @@ def get_ts_data(TSfile, variable):
 
     # Check that the input variable matches with one in the list.
     if variable not in col_names:
-        print ("That variable is not available. Choose a variable from the following list")
-        print ("\
+        print("That variable is not available. Choose a variable from the following list")
+        print("\
         'id'           grid ID\n\
         'ts_hour':     forecast time in hours\n\
         'id_tsloc':    time series ID\n\
@@ -189,7 +190,7 @@ def get_vert_data(TSfile, model_start, get_this_time, model_timestep=2,
     # If the model start and the get time are the same then return the first
     # row time in the model which is really the first time step.
     if model_start == get_this_time:
-        print ("called the first time", model_start == get_this_time)
+        print("called the first time", model_start == get_this_time)
         row_number = 2
     # print ('line:', row_number)
 
@@ -201,17 +202,17 @@ def get_vert_data(TSfile, model_start, get_this_time, model_timestep=2,
 
     for v in vlist:
         tmp = linecache.getline(TSfile[:-2]+v, row_number)
-        tmp = np.array(tmp.split(), dtype=float)[1:-2] # omit first and last level
+        tmp = np.array(tmp.split(), dtype=float)[1:-2]  # omit first and last level
         profile.update({v: tmp})
 
     return profile
-    
+
 
 def get_full_vert(PROFILEfile, model_start):
     """
     Opens a vertical profile timeseries file and gets all the data.
     PROFILEfile filenames are in the form STATION.d0X.YY where X is the
-    domina name and YY is the variable type listed below     
+    domina name and YY is the variable type listed below
         Available profiles are:
              PH: Geopotential height
              TH: Potential temperature

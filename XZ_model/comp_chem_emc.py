@@ -25,12 +25,14 @@ Currently, this script just supports four species:
 import re
 import sys
 sys.path.append('../XZ_maps')
+# isort: split
 
 import numpy as np
 import pandas as pd
 import proplot as plot
 import xarray as xr
 from wrf import ll_to_xy
+
 from wrfchem import read_wrf
 from xin_cartopy import load_province
 

@@ -25,18 +25,18 @@ If you want to apply to other mechanisms, you need to edit:
     2. conversion_table.csv
 '''
 
-import os
 import logging
-import pyresample
-import pandas as pd
-import xarray as xr
-import numpy as np
-from glob import glob
-from time import strftime
+import os
 from calendar import monthrange
 from datetime import datetime, timedelta
+from glob import glob
+from time import strftime
+
+import numpy as np
+import pandas as pd
+import xarray as xr
 from pyresample.geometry import AreaDefinition, SwathDefinition
-from pyresample.kd_tree import resample_nearest, resample_custom
+from pyresample.kd_tree import resample_custom, resample_nearest
 
 # Choose the following line for info or debugging:
 # logging.basicConfig(level=logging.INFO)
@@ -46,7 +46,7 @@ logging.basicConfig(level=logging.DEBUG)
 data_path = '../input_files/'
 output_dir = '../output_files/'
 domain = 'd01'
-resample_method='nearest' #nearest or idw
+resample_method = 'nearest'  # nearest or idw
 
 # emission year
 yyyy_emi = 2016
@@ -73,7 +73,7 @@ conversion_table_dtype = {'MOZCART': str,
 minhour = 0
 maxhour = 23
 delta = 1  # unit: hour
-days  = monthrange(yyyy, mm)[1] #get number of days of the month
+days = monthrange(yyyy, mm)[1]  # get number of days of the month
 chem1 = output_dir+"wrfchemi_00z_d"+domain
 chem2 = output_dir+"wrfchemi_12z_d"+domain
 
@@ -101,8 +101,8 @@ class meic(object):
         '''
         self.geo = xr.open_dataset(data_path + 'geo_em.'+domain+'.nc')
         attrs = self.geo.attrs
-        i     = attrs['i_parent_end']
-        j     = attrs['j_parent_end']
+        i = attrs['i_parent_end']
+        j = attrs['j_parent_end']
 
         # calculate attrs for area definition
         shape = (j, i)
@@ -115,10 +115,14 @@ class meic(object):
                      'lon_0': attrs['STAND_LON'],
                      'lat_1': attrs['TRUELAT1'],
                      'lat_2': attrs['TRUELAT2'],
-                     'a':6370000,
-                     'b':6370000}
+                     'a': 6370000,
+                     'b': 6370000}
         center = (0, 0)
-        self.area_def = AreaDefinition.from_circle(area_id, proj_dict, center, radius, shape=shape)
+        self.area_def = AreaDefinition.from_circle(area_id,
+                                                   proj_dict,
+                                                   center,
+                                                   radius,
+                                                   shape=shape)
 
     def read_meic(self, ):
         '''
@@ -127,14 +131,14 @@ class meic(object):
         '''
         # read conversion table
         df = pd.read_csv('./conversion_table.csv',
-                         sep=' *, *', # delete spaces
+                         sep=' *, *',  # delete spaces
                          comment='#',
                          engine="python",
                          dtype=conversion_table_dtype)
-        
+
         # iterate through MEIC mechanisms
         for col in df.columns[1:-4]:
-            logging.info ('Reading '+col+' mechanism .....')
+            logging.info('Reading '+col+' mechanism .....')
             if col == 'ALL':
                 # choose any col name
                 col_path = df.columns[1]
@@ -143,24 +147,25 @@ class meic(object):
             emi_path = data_path+str(yyyy_emi)+'/'+col_path+'/'
             # drop nan values and don't reset index
             #   we need the index in other variables
-            species = df[col].dropna()#.reset_index(drop=True)
+            species = df[col].dropna()
 
-            for index,spec in enumerate(species):
+            for index, spec in enumerate(species):
                 # get variables related to desired chemical mechanism
-                name   = df[df.columns[0]][species.index[index]]
+                name = df[df.columns[0]][species.index[index]]
                 weight = df['WEIGHT'][species.index[index]]
-                mw     = df['MW'][species.index[index]]
-                solid  = df['SOLID'][species.index[index]]
-                voc    = df['VOC'][species.index[index]]
+                mw = df['MW'][species.index[index]]
+                solid = df['SOLID'][species.index[index]]
+                voc = df['VOC'][species.index[index]]
 
-                logging.info (' '*8+'Map to '+name+' species')
+                logging.info(' '*8+'Map to '+name+' species')
                 emi_exist = hasattr(self, 'emi')
 
-                for index_s,s in enumerate(spec.split('+')):
-                    logging.info (' '*10+'Reading '+s+' species ....')
+                for index_s, s in enumerate(spec.split('+')):
+                    logging.info(' '*10+'Reading '+s+' species ....')
                     pattern = emi_path+'*_'+s+'.nc'
                     # len of filelist should be 5 in sequence:
-                    #       agriculture, industry, power, residential and transportation
+                    #       agriculture, industry, power,
+                    #       residential and transportation
                     files = sorted(glob(pattern))
                     # sum all sources for the specific species
                     ds = xr.open_mfdataset(files,
@@ -170,32 +175,40 @@ class meic(object):
                     if not emi_exist:
                         # just read lon/lat once
                         self.calc_area(ds)
-                        self.emi = self.get_ds(ds, name, weight, solid, mw, voc)
+                        self.emi = self.get_ds(ds, name, weight,
+                                               solid, mw, voc)
                     else:
                         if len(spec) > 1 and index_s > 0:
                             # like spec_a+spec_b+...
-                            self.emi[name] += self.get_ds(ds, name, weight, solid, mw, voc)[name]
+                            self.emi[name] += self.get_ds(ds, name,
+                                                          weight, solid,
+                                                          mw, voc)[name]
                         else:
-                            self.emi[name] = self.get_ds(ds, name, weight, solid, mw, voc)[name]
+                            self.emi[name] = self.get_ds(ds, name,
+                                                         weight, solid,
+                                                         mw, voc)[name]
 
-                logging.debug(' '*8 \
-                               + ' min: ' + str(self.emi[name].min().values) \
-                               + ' max: ' + str(self.emi[name].max().values) \
-                               + ' mean '+ str(self.emi[name].mean().values)
-                      )
+                logging.debug(' '*8 +
+                              ' min: ' + str(self.emi[name].min().values) +
+                              ' max: ' + str(self.emi[name].max().values) +
+                              ' mean ' + str(self.emi[name].mean().values)
+                              )
 
     def calc_area(self, ds):
         '''
         Get the lon/lat and area (m2)of emission gridded data
         '''
         ds = ds.isel(kind=0)
-        self.emi_lon_b = np.arange(ds['x_range'][0], ds['x_range'][1]+ds['spacing'][0], ds['spacing'][0])
-        self.emi_lat_b = np.arange(ds['y_range'][0], ds['y_range'][1]+ds['spacing'][1], ds['spacing'][1])
+        self.emi_lon_b = np.arange(ds['x_range'][0], ds['x_range'][1] +
+                                   ds['spacing'][0], ds['spacing'][0])
+        self.emi_lat_b = np.arange(ds['y_range'][0], ds['y_range'][1] +
+                                   ds['spacing'][1], ds['spacing'][1])
         self.emi_lon = (self.emi_lon_b[:-1] + self.emi_lon_b[1:])/2
         self.emi_lat = (self.emi_lat_b[:-1] + self.emi_lat_b[1:])/2
 
         # ref: https://github.com/Timothy-W-Hilton/STEMPyTools
-        lon_bounds2d, lat_bounds2d = np.meshgrid(self.emi_lon_b, self.emi_lat_b)
+        lon_bounds2d, lat_bounds2d = np.meshgrid(self.emi_lon_b,
+                                                 self.emi_lat_b)
         EARTH_RADIUS = 6370000.0
         Rad_per_Deg = np.pi / 180.0
 
@@ -204,8 +217,8 @@ class meic(object):
         area = np.full((ydim, xdim), np.nan)
         for j in range(ydim):
             for i in range(xdim):
-                xlon1 = lon_bounds2d[j ,i]
-                xlon2 = lon_bounds2d[j ,i+1]
+                xlon1 = lon_bounds2d[j, i]
+                xlon2 = lon_bounds2d[j, i+1]
                 ylat1 = lat_bounds2d[j, i]
                 ylat2 = lat_bounds2d[j+1, i]
 
@@ -222,49 +235,50 @@ class meic(object):
         Generate the reshaped ds for species
         '''
         seconds = days*24*3600
-        hours   = days*24
+        hours = days*24
         # z is the emission of species
         # shape: 5*64000 (kind*grid)
         valid = ds.z != ds.z.attrs['nodata_value']
         if solid:
             # WRF-Chem unit: ug/m3 m/s
             # MEIC: unit: tg/(grid*month)
-            ds['z'] = ds['z'].where(valid, 0.)*\
-                        weight*1e12/(seconds*\
-                        np.tile(self.emi_area.ravel(),
-                                (ds['z'].shape[0], 1)))
+            ds['z'] = ds['z'].where(valid, 0.) *\
+                        weight*1e12/(seconds *
+                                     np.tile(self.emi_area.ravel(),
+                                             (ds['z'].shape[0], 1)))
             ds['z'].attrs['units'] = 'ug/m3 m/s'
         elif voc:
             # WRF-Chem unit: mol km-2 hr-1
             # MEIC unit: 10**6 mol/(grid*month)
-            ds['z'] = ds['z'].where(valid, 0.)*\
-                        weight*1e6/(hours*\
-                        np.tile(self.emi_area.ravel()/1e6,
-                            (ds['z'].shape[0], 1)))
+            ds['z'] = ds['z'].where(valid, 0.) *\
+                        weight*1e6/(hours *
+                                    np.tile(self.emi_area.ravel()/1e6,
+                                            (ds['z'].shape[0], 1)))
             ds['z'].attrs['units'] = 'mol km^-2 hr^-1'
         else:
             # WRF-Chem unit: mol km-2 hr-1
             # MEIC unit: tg/(grid*month)
-            ds['z'] = ds['z'].where(valid, 0.)*\
-                        weight*1e6/(hours*mw*\
-                        np.tile(self.emi_area.ravel()/1e6,
-                            (ds['z'].shape[0], 1)))
+            ds['z'] = ds['z'].where(valid, 0.) *\
+                        weight*1e6/(hours * mw *
+                                    np.tile(self.emi_area.ravel()/1e6,
+                                            (ds['z'].shape[0], 1)))
             ds['z'].attrs['units'] = 'mol km^-2 hr^-1'
 
         # read hourly factor table
         try:
             # shape: 24*5 (time*kind)
-            table = xr.DataArray(np.genfromtxt('./hourly_factor.csv', 
-                                                delimiter=',',
-                                                comments='#',
-                                                usecols=(0,1,2,3,4),
-                                                skip_header=2),
-                                dims=['time', 'kind']
-                                )
+            table = xr.DataArray(np.genfromtxt('./hourly_factor.csv',
+                                               delimiter=',',
+                                               comments='#',
+                                               usecols=(0, 1, 2, 3, 4),
+                                               skip_header=2),
+                                 dims=['time', 'kind']
+                                 )
             table = table/(table.sum(dim='time')/24)
 
         except OSError:
-            logging.info(' '*8+'hourly_factor.csv does not exist, use 1 instead')
+            logging.info(' '*8 +
+                         'hourly_factor.csv does not exist, use 1 instead')
             table = xr.DataArray(np.full((24, 5), 1),
                                  dims=['time', 'kind'])
 
@@ -272,17 +286,21 @@ class meic(object):
         # https://stackoverflow.com/questions/26089893/understanding-numpys-einsum
         # (24*5) .* (5*64000) = 24* 64000 (time*grid)
         dims = ds['dimension'].values
-        ydim = dims[0,1]
-        xdim = dims[0,0]
+        ydim = dims[0, 1]
+        xdim = dims[0, 0]
         # we need to flip because of the "strange" order
         #   of 1d array in MEIC nc file.
-        ds[name] = xr.DataArray(np.flip(table.dot(ds['z']).values.reshape((-1, ydim, xdim)), (1)),
-                                     dims=['time', 'y', 'x'],
-                                     attrs=ds['z'].attrs
-                                     )
+        ds[name] = xr.DataArray(np.flip(table.dot(ds['z'])
+                                        .values.reshape(
+                                                        (-1, ydim, xdim)
+                                                        ),
+                                        (1)),
+                                dims=['time', 'y', 'x'],
+                                attrs=ds['z'].attrs
+                                )
 
         # drop old dims
-        ds = ds.drop_dims(['xysize','side', 'kind'])
+        ds = ds.drop_dims(['xysize', 'side', 'kind'])
         # create new variables
         lon2d, lat2d = np.meshgrid(self.emi_lon, self.emi_lat)
         lon_bounds2d, lat_bounds2d = np.meshgrid(self.emi_lon_b, self.emi_lat_b)
@@ -292,8 +310,8 @@ class meic(object):
                                        coords=[self.emi_lat, self.emi_lon],
                                        dims=['y', 'x'])
         ds['latitude'] = xr.DataArray(lat2d,
-                                       coords=[self.emi_lat, self.emi_lon],
-                                       dims=['y', 'x'])
+                                      coords=[self.emi_lat, self.emi_lon],
+                                      dims=['y', 'x'])
 
         ds.attrs.pop('title')
 
@@ -318,65 +336,75 @@ class meic(object):
         # convert datetime to date string
         Times = []
         for timstep in datetime_list:
-            times_str = strftime(t_format,timstep.timetuple())
+            times_str = strftime(t_format, timstep.timetuple())
             Times.append(times_str)
-        # the method of creating "Times" with unlimited dimension 
+        # the method of creating "Times" with unlimited dimension
         # ref: htttps://github.com/pydata/xarray/issues/3407
-        Times = xr.DataArray(np.array(Times, dtype = np.dtype(('S', 19))), dims = ['Time'])
-        self.chemi = xr.Dataset({'Times':Times})
+        Times = xr.DataArray(np.array(Times,
+                                      dtype=np.dtype(('S', 19))),
+                             dims=['Time'])
+        self.chemi = xr.Dataset({'Times': Times})
 
         # resample
-        orig_def = SwathDefinition(lons=self.emi['longitude'], lats=self.emi['latitude'])
+        orig_def = SwathDefinition(lons=self.emi['longitude'],
+                                   lats=self.emi['latitude'])
         for vname in self.emi.data_vars:
             if 'E_' in vname:
                 logging.info(f'Resample {vname} ...')
-                resampled_list =[]
+                resampled_list = []
                 for t in range(self.emi[vname].shape[0]):
                     # different resample methods
                     # see: http://earthpy.org/interpolation_between_grids_with_pyresample.html
                     if resample_method == 'nearest':
                         resampled_list.append(resample_nearest(orig_def,
-                                                    self.emi[vname][t,:,:].values,
-                                                    self.area_def,
-                                                    radius_of_influence=500000,
-                                                    fill_value=0.)
-                                            )
+                                              self.emi[vname][t, :, :].values,
+                                              self.area_def,
+                                              radius_of_influence=500000,
+                                              fill_value=0.)
+                                              )
                     elif resample_method == 'idw':
                         resampled_list.append(resample_custom(orig_def,
-                                                    self.emi[vname][t,:,:].values,
-                                                    self.area_def,
-                                                    radius_of_influence=500000,
-                                                    neighbours=10,
-                                                    weight_funcs=lambda r: 1/r**2,
-                                                    fill_value=0.)
-                                            )
+                                              self.emi[vname][t, :, :].values,
+                                              self.area_def,
+                                              radius_of_influence=500000,
+                                              neighbours=10,
+                                              weight_funcs=lambda r: 1/r**2,
+                                              fill_value=0.)
+                                              )
                 # combine 2d array list to one 3d
                 # ref: https://stackoverflow.com/questions/4341359/
                 #       convert-a-list-of-2d-numpy-arrays-to-one-3d-numpy-array
                 # we also need to flip the 3d array,
                 #    because of the "strange" order of 1d array in MEIC nc file
                 #    then add another dimension for zdim.
-                resampled_data = np.flip(np.rollaxis(np.dstack(resampled_list), -1), 1)[:, np.newaxis, ...]
+                resampled_data = np.flip(
+                                         np.rollaxis(
+                                                     np.dstack(resampled_list),
+                                                     -1),
+                                         1)[:, np.newaxis, ...]
                 # assign to self.chemi with dims
                 self.chemi[vname] = xr.DataArray(resampled_data,
-                                       dims=['Time', 'emissions_zdim','south_north', 'west_east'])
+                                                 dims=['Time',
+                                                       'emissions_zdim',
+                                                       'south_north',
+                                                       'west_east'])
 
                 # add attrs needed by WRF-Chem
                 v_attrs = {'FieldType': 104,
-                            'MemoryOrder': 'XYZ',
-                            'description': vname,
-                            'stagger': '',
-                            'coordinates': 'XLONG XLAT',
-                            'units': self.emi[vname].attrs['units']
+                           'MemoryOrder': 'XYZ',
+                           'description': vname,
+                           'stagger': '',
+                           'coordinates': 'XLONG XLAT',
+                           'units': self.emi[vname].attrs['units']
                            }
 
                 self.chemi[vname] = self.chemi[vname].assign_attrs(v_attrs)
 
-                logging.debug(' '*8 \
-                   + ' min: ' + str(self.chemi[vname].min().values) \
-                   + ' max: ' + str(self.chemi[vname].max().values) \
-                   + ' mean '+ str(self.chemi[vname].mean().values)
-                  )
+                logging.debug(' '*8 +
+                              ' min: ' + str(self.chemi[vname].min().values) +
+                              ' max: ' + str(self.chemi[vname].max().values) +
+                              ' mean ' + str(self.chemi[vname].mean().values)
+                              )
 
     def create_file(self, ):
         '''
@@ -388,24 +416,27 @@ class meic(object):
 
         comp = dict(zlib=True, complevel=5)
         comp_t = dict(zlib=True, complevel=5, char_dim_name='DateStrLen')
-        encoding = {var: comp_t if var=='Times' else comp for var in self.chemi.data_vars}
+        encoding = {var: comp_t if var == 'Times' else comp
+                    for var in self.chemi.data_vars}
 
         logging.info(f'Saving to {output_dir}wrfchemi_00z_{domain}')
-        chemi_00 = self.chemi.isel(Time=np.arange(12)).assign_attrs(self.geo.attrs)
+        chemi_00 = self.chemi.isel(Time=np.arange(12)) \
+                       .assign_attrs(self.geo.attrs)
         chemi_00.to_netcdf(
                             output_dir+f'wrfchemi_00z_{domain}',
                             format='NETCDF4',
                             encoding=encoding,
-                            unlimited_dims={'Time':True}
+                            unlimited_dims={'Time': True}
                           )
 
         logging.info(f'Saving to {output_dir}wrfchemi_12z_{domain}')
-        chemi_12 = self.chemi.isel(Time=np.arange(12,24,1)).assign_attrs(self.geo.attrs)
+        chemi_12 = self.chemi.isel(Time=np.arange(12, 24, 1)) \
+                       .assign_attrs(self.geo.attrs)
         chemi_12.to_netcdf(
                             output_dir+f'wrfchemi_12z_{domain}',
                             format='NETCDF4',
                             encoding=encoding,
-                            unlimited_dims={'Time':True}
+                            unlimited_dims={'Time': True}
                           )
 
         logging.info('----- Successfully -----')
