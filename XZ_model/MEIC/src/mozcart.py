@@ -35,6 +35,7 @@ from time import strftime
 import numpy as np
 import pandas as pd
 import xarray as xr
+from pyresample.bilinear import resample_bilinear
 from pyresample.geometry import AreaDefinition, SwathDefinition
 from pyresample.kd_tree import resample_custom, resample_nearest
 
@@ -46,7 +47,7 @@ logging.basicConfig(level=logging.DEBUG)
 data_path = '../input_files/'
 output_dir = '../output_files/'
 domain = 'd01'
-resample_method = 'nearest'  # nearest or idw
+resample_method = 'bilinear'  # nearest, bilinear or idw
 
 # emission year
 yyyy_emi = 2016
@@ -164,8 +165,8 @@ class meic(object):
                     logging.info(' '*10+'Reading '+s+' species ....')
                     pattern = emi_path+'*_'+s+'.nc'
                     # len of filelist should be 5 in sequence:
-                    #       agriculture, industry, power,
-                    #       residential and transportation
+                    #   agriculture, industry, power,
+                    #   residential and transportation
                     files = sorted(glob(pattern))
                     # sum all sources for the specific species
                     ds = xr.open_mfdataset(files,
@@ -199,16 +200,17 @@ class meic(object):
         Get the lon/lat and area (m2)of emission gridded data
         '''
         ds = ds.isel(kind=0)
-        self.emi_lon_b = np.arange(ds['x_range'][0], ds['x_range'][1] +
-                                   ds['spacing'][0], ds['spacing'][0])
-        self.emi_lat_b = np.arange(ds['y_range'][0], ds['y_range'][1] +
-                                   ds['spacing'][1], ds['spacing'][1])
+        self.emi_lon_b = np.arange(ds['x_range'][0],
+                                   ds['x_range'][1]+ds['spacing'][0],
+                                   ds['spacing'][0])
+        self.emi_lat_b = np.arange(ds['y_range'][0],
+                                   ds['y_range'][1]+ds['spacing'][1],
+                                   ds['spacing'][1])
         self.emi_lon = (self.emi_lon_b[:-1] + self.emi_lon_b[1:])/2
         self.emi_lat = (self.emi_lat_b[:-1] + self.emi_lat_b[1:])/2
 
         # ref: https://github.com/Timothy-W-Hilton/STEMPyTools
-        lon_bounds2d, lat_bounds2d = np.meshgrid(self.emi_lon_b,
-                                                 self.emi_lat_b)
+        lon_bounds2d, lat_bounds2d = np.meshgrid(self.emi_lon_b, self.emi_lat_b)
         EARTH_RADIUS = 6370000.0
         Rad_per_Deg = np.pi / 180.0
 
@@ -242,26 +244,29 @@ class meic(object):
         if solid:
             # WRF-Chem unit: ug/m3 m/s
             # MEIC: unit: tg/(grid*month)
-            ds['z'] = ds['z'].where(valid, 0.) *\
-                        weight*1e12/(seconds *
-                                     np.tile(self.emi_area.ravel(),
-                                             (ds['z'].shape[0], 1)))
+            ds['z'] = ds['z'].where(valid, 0.) * weight*1e12 \
+                      / (seconds * np.tile(self.emi_area.ravel(),
+                                           (ds['z'].shape[0], 1)
+                                           )
+                         )
             ds['z'].attrs['units'] = 'ug/m3 m/s'
         elif voc:
             # WRF-Chem unit: mol km-2 hr-1
             # MEIC unit: 10**6 mol/(grid*month)
-            ds['z'] = ds['z'].where(valid, 0.) *\
-                        weight*1e6/(hours *
-                                    np.tile(self.emi_area.ravel()/1e6,
-                                            (ds['z'].shape[0], 1)))
+            ds['z'] = ds['z'].where(valid, 0.) * weight*1e6 \
+                      / (hours*np.tile(self.emi_area.ravel()/1e6,
+                                       (ds['z'].shape[0], 1)
+                                       )
+                         )
             ds['z'].attrs['units'] = 'mol km^-2 hr^-1'
         else:
             # WRF-Chem unit: mol km-2 hr-1
             # MEIC unit: tg/(grid*month)
-            ds['z'] = ds['z'].where(valid, 0.) *\
-                        weight*1e6/(hours * mw *
-                                    np.tile(self.emi_area.ravel()/1e6,
-                                            (ds['z'].shape[0], 1)))
+            ds['z'] = ds['z'].where(valid, 0.) * weight*1e6 \
+                      / (hours*mw*np.tile(self.emi_area.ravel()/1e6,
+                                          (ds['z'].shape[0], 1)
+                                          )
+                         )
             ds['z'].attrs['units'] = 'mol km^-2 hr^-1'
 
         # read hourly factor table
@@ -290,11 +295,7 @@ class meic(object):
         xdim = dims[0, 0]
         # we need to flip because of the "strange" order
         #   of 1d array in MEIC nc file.
-        ds[name] = xr.DataArray(np.flip(table.dot(ds['z'])
-                                        .values.reshape(
-                                                        (-1, ydim, xdim)
-                                                        ),
-                                        (1)),
+        ds[name] = xr.DataArray(np.flip(table.dot(ds['z']).values.reshape((-1, ydim, xdim)), (1)),
                                 dims=['time', 'y', 'x'],
                                 attrs=ds['z'].attrs
                                 )
@@ -341,7 +342,8 @@ class meic(object):
         # the method of creating "Times" with unlimited dimension
         # ref: htttps://github.com/pydata/xarray/issues/3407
         Times = xr.DataArray(np.array(Times,
-                                      dtype=np.dtype(('S', 19))),
+                                      dtype=np.dtype(('S', 19))
+                                      ),
                              dims=['Time'])
         self.chemi = xr.Dataset({'Times': Times})
 
@@ -356,20 +358,35 @@ class meic(object):
                     # different resample methods
                     # see: http://earthpy.org/interpolation_between_grids_with_pyresample.html
                     if resample_method == 'nearest':
-                        resampled_list.append(resample_nearest(orig_def,
+                        resampled_list.append(resample_nearest(
+                                              orig_def,
                                               self.emi[vname][t, :, :].values,
                                               self.area_def,
-                                              radius_of_influence=500000,
+                                              radius_of_influence=100000,
                                               fill_value=0.)
                                               )
                     elif resample_method == 'idw':
-                        resampled_list.append(resample_custom(orig_def,
+                        resampled_list.append(resample_custom(
+                                              orig_def,
                                               self.emi[vname][t, :, :].values,
                                               self.area_def,
-                                              radius_of_influence=500000,
+                                              radius_of_influence=100000,
                                               neighbours=10,
                                               weight_funcs=lambda r: 1/r**2,
                                               fill_value=0.)
+                                              )
+                    elif resample_method == 'bilinear':
+                        resampled_list.append(resample_bilinear(
+                                              self.emi[vname][t, :, :].values,
+                                              orig_def,
+                                              self.area_def,
+                                              radius=100000,
+                                              neighbours=10,
+                                              nprocs=4,
+                                              reduce_data=True,
+                                              segments=None,
+                                              fill_value=0.,
+                                              epsilon=0)
                                               )
                 # combine 2d array list to one 3d
                 # ref: https://stackoverflow.com/questions/4341359/
@@ -377,17 +394,15 @@ class meic(object):
                 # we also need to flip the 3d array,
                 #    because of the "strange" order of 1d array in MEIC nc file
                 #    then add another dimension for zdim.
-                resampled_data = np.flip(
-                                         np.rollaxis(
-                                                     np.dstack(resampled_list),
-                                                     -1),
-                                         1)[:, np.newaxis, ...]
+                resampled_data = np.flip(np.rollaxis(np.dstack(resampled_list), -1), 1)[:, np.newaxis, ...]
                 # assign to self.chemi with dims
                 self.chemi[vname] = xr.DataArray(resampled_data,
                                                  dims=['Time',
                                                        'emissions_zdim',
                                                        'south_north',
-                                                       'west_east'])
+                                                       'west_east'
+                                                       ]
+                                                 )
 
                 # add attrs needed by WRF-Chem
                 v_attrs = {'FieldType': 104,
@@ -420,8 +435,7 @@ class meic(object):
                     for var in self.chemi.data_vars}
 
         logging.info(f'Saving to {output_dir}wrfchemi_00z_{domain}')
-        chemi_00 = self.chemi.isel(Time=np.arange(12)) \
-                       .assign_attrs(self.geo.attrs)
+        chemi_00 = self.chemi.isel(Time=np.arange(12)).assign_attrs(self.geo.attrs)
         chemi_00.to_netcdf(
                             output_dir+f'wrfchemi_00z_{domain}',
                             format='NETCDF4',
@@ -430,8 +444,7 @@ class meic(object):
                           )
 
         logging.info(f'Saving to {output_dir}wrfchemi_12z_{domain}')
-        chemi_12 = self.chemi.isel(Time=np.arange(12, 24, 1)) \
-                       .assign_attrs(self.geo.attrs)
+        chemi_12 = self.chemi.isel(Time=np.arange(12, 24, 1)).assign_attrs(self.geo.attrs)
         chemi_12.to_netcdf(
                             output_dir+f'wrfchemi_12z_{domain}',
                             format='NETCDF4',
