@@ -10,6 +10,7 @@ OUTPUT:
 UPDATE:
     Xin Zhang:
        03/13/2020: Basic
+       12/04/2020: Add bilinear method and set radius
 
 Steps:
     1. Create WRF area by reading the info of geo* file
@@ -23,6 +24,7 @@ Currently, this script just supports MOZCART mechanism.
 If you want to apply to other mechanisms, you need to edit:
     1. conversion_table_dtype (below);
     2. conversion_table.csv
+
 '''
 
 import logging
