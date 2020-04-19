@@ -1,2 +1,4 @@
 !*.csv
 !*.png
+*.asc
+*aux.xml
