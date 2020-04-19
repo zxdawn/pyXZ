@@ -55,6 +55,7 @@ class read_wrf(object):
     def get_info(self, wrf_path, fname, vnames):
         # self.wrf = xr.open_dataset(wrf_path+fname)._file_obj.ds
         self.ds = Dataset(wrf_path+fname)
+        self.xrds = xr.open_dataset(wrf_path+fname)
 
         # check vname and read all of them
         self.dv = {}
@@ -71,7 +72,7 @@ class read_wrf(object):
                     self.dv.update({'lon': latlon_coords(self.dv[v])[1]})
 
         # get proj
-        attrs = xr.open_dataset(wrf_path+fname).attrs
+        attrs = self.xrds.attrs
         i = attrs['WEST-EAST_GRID_DIMENSION']
         j = attrs['SOUTH-NORTH_GRID_DIMENSION']
 
