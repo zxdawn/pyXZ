@@ -38,7 +38,7 @@ f, axs = plot.subplots(tight=True, share=0,
 
 axs.format(suptitle=time_str+' nearest')
 for index, key in enumerate(species):
-    m = axs[index].pcolormesh(ds[key][t, 0, ...], cmap='Fire')
+    m = axs[index].pcolormesh(ds[key][t, 0, ...], levels=256, cmap='Fire')
     axs[index].format(title=ds[key].attrs['description'])
     axs[index].colorbar(m, loc='r',
                         label=ds[key].attrs['units'],
