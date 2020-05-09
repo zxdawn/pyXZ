@@ -110,6 +110,7 @@ class meic(object):
         # calculate attrs for area definition
         shape = (j, i)
         radius = (i*attrs['DX']/2, j*attrs['DY']/2)
+        self.radius_of_influence = attrs['DX']*20
 
         # create area as same as WRF
         area_id = 'wrf_circle'
@@ -364,7 +365,7 @@ class meic(object):
                                               orig_def,
                                               self.emi[vname][t, :, :].values,
                                               self.area_def,
-                                              radius_of_influence=100000,
+                                              radius_of_influence=self.radius_of_influence,
                                               fill_value=0.)
                                               )
                     elif resample_method == 'idw':
@@ -372,7 +373,7 @@ class meic(object):
                                               orig_def,
                                               self.emi[vname][t, :, :].values,
                                               self.area_def,
-                                              radius_of_influence=100000,
+                                              radius_of_influence=self.radius_of_influence,
                                               neighbours=10,
                                               weight_funcs=lambda r: 1/r**2,
                                               fill_value=0.)
@@ -382,7 +383,7 @@ class meic(object):
                                               self.emi[vname][t, :, :].values,
                                               orig_def,
                                               self.area_def,
-                                              radius=100000,
+                                              radius=self.radius_of_influence,
                                               neighbours=10,
                                               nprocs=4,
                                               reduce_data=True,
