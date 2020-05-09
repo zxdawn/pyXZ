@@ -44,7 +44,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 # --- input --- #
 data_path = '../input_files/'
-output_dir = '../output_files/'
+wrfchemi_dir = '../output_files/'
+output_dir = '../output_files/vito/'
 vito_filename = 'VITO_STD-RES-INVENTORY_EAST-CHINA.nc'
 domain = 'd01'
 resample_method = 'bilinear'  # nearest, bilinear or idw
@@ -60,8 +61,8 @@ minhour = 0
 maxhour = 23
 delta = 1  # unit: hour
 days = monthrange(yyyy, mm)[1]  # get number of days of the month
-chem1 = output_dir+"wrfchemi_00z_d"+domain
-chem2 = output_dir+"wrfchemi_12z_d"+domain
+chem1 = wrfchemi_dir+"wrfchemi_00z_d"+domain
+chem2 = wrfchemi_dir+"wrfchemi_12z_d"+domain
 
 wrf_projs = {1: 'lcc',
              2: 'npstere',
@@ -391,7 +392,7 @@ class vito(object):
         tindex = [np.arange(12), np.arange(12, 24, 1)]
 
         # generate files
-        for index, file in enumerate([output_dir+f'wrfchemi_00z_{domain}', output_dir+f'wrfchemi_12z_{domain}']):
+        for index, file in enumerate([wrfchemi_dir+f'wrfchemi_00z_{domain}', wrfchemi_dir+f'wrfchemi_12z_{domain}']):
             if os.path.isfile(file):
                 ds = xr.open_dataset(file)
                 ds['E_NO'] = self.chemi['E_NO'].isel(Time=tindex[index])
@@ -401,8 +402,9 @@ class vito(object):
                 encoding = {var: comp_t if var == 'Times' else comp
                             for var in ds.data_vars}
 
-                logging.info(f'Saving to {file}')
-                ds.to_netcdf(f'{file}',
+                output_file = output_dir+os.path.basename(file)
+                logging.info(f'Saving to {output_file}')
+                ds.to_netcdf(f'{output_file}',
                              format='NETCDF4',
                              encoding=encoding,
                              unlimited_dims={'Time': True}
