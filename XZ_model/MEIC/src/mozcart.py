@@ -28,6 +28,7 @@ If you want to apply to other mechanisms, you need to edit:
 '''
 
 import logging
+import warnings
 import os
 from calendar import monthrange
 from datetime import datetime, timedelta
@@ -40,6 +41,7 @@ import xarray as xr
 from pyresample.bilinear import resample_bilinear
 from pyresample.geometry import AreaDefinition, SwathDefinition
 from pyresample.kd_tree import resample_custom, resample_nearest
+warnings.filterwarnings('ignore', category=RuntimeWarning, append=True)
 
 # Choose the following line for info or debugging:
 # logging.basicConfig(level=logging.INFO)
@@ -104,8 +106,8 @@ class meic(object):
         '''
         self.geo = xr.open_dataset(data_path + 'geo_em.'+domain+'.nc')
         attrs = self.geo.attrs
-        i = attrs['i_parent_end']
-        j = attrs['j_parent_end']
+        i = attrs['WEST-EAST_GRID_DIMENSION']
+        j = attrs['SOUTH-NORTH_GRID_DIMENSION']
 
         # calculate attrs for area definition
         shape = (j, i)
@@ -127,6 +129,7 @@ class meic(object):
                                                    center,
                                                    radius,
                                                    shape=shape)
+        logging.info(f'Area: {self.area_def}')
 
     def read_meic(self, ):
         '''

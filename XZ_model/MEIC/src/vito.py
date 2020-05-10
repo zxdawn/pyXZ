@@ -88,8 +88,8 @@ class vito(object):
         '''
         self.geo = xr.open_dataset(data_path + 'geo_em.'+domain+'.nc')
         attrs = self.geo.attrs
-        i = attrs['i_parent_end']
-        j = attrs['j_parent_end']
+        i = attrs['WEST-EAST_GRID_DIMENSION']
+        j = attrs['SOUTH-NORTH_GRID_DIMENSION']
 
         # calculate attrs for area definition
         shape = (j, i)
