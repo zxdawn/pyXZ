@@ -112,7 +112,7 @@ class meic(object):
         # calculate attrs for area definition
         shape = (j, i)
         radius = (i*attrs['DX']/2, j*attrs['DY']/2)
-        self.radius_of_influence = attrs['DX']*20
+        self.radius_of_influence = 1000
 
         # create area as same as WRF
         area_id = 'wrf_circle'
