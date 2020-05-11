@@ -106,19 +106,19 @@ class meic(object):
         '''
         self.geo = xr.open_dataset(data_path + 'geo_em.'+domain+'.nc')
         attrs = self.geo.attrs
-        i = attrs['WEST-EAST_GRID_DIMENSION']
-        j = attrs['SOUTH-NORTH_GRID_DIMENSION']
+        i = attrs['WEST-EAST_GRID_DIMENSION'] - 1
+        j = attrs['SOUTH-NORTH_GRID_DIMENSION'] - 1
 
         # calculate attrs for area definition
         shape = (j, i)
         radius = (i*attrs['DX']/2, j*attrs['DY']/2)
-        self.radius_of_influence = 1000
+        self.radius_of_influence = 20000
 
         # create area as same as WRF
         area_id = 'wrf_circle'
         proj_dict = {'proj': wrf_projs[attrs['MAP_PROJ']],
-                     'lat_0': attrs['MOAD_CEN_LAT'],
-                     'lon_0': attrs['STAND_LON'],
+                     'lat_0': attrs['CEN_LAT'],
+                     'lon_0': attrs['CEN_LON'],
                      'lat_1': attrs['TRUELAT1'],
                      'lat_2': attrs['TRUELAT2'],
                      'a': 6370000,
