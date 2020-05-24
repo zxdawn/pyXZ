@@ -136,7 +136,7 @@ def write_tslist(content, filename='tslist.new'):
 def main():
     # --------------- input --------------- #
     wrf_path = '../XZ_model/data/wrfchem/'
-    wrf_file = 'wrfout_d03_2019-07-24_18-00-00'
+    wrf_file = 'wrfout_d01_2019-07-25_05-00-00'
     sonde = './data/ozonesonde/9_201907251434.txt'
     station_name = 'Jiangning'
     pfx = 'JL'
@@ -148,8 +148,9 @@ def main():
     profile, _ = read_profile(sonde, smooth=True)
 
     # station_lons, station_lats = sonde_in_wrf_pyresample(profile, wps)
-    station_lats, station_lons = sonde_in_wrf(profile, wrf, coords='ll')
-    content = generate_tslist(station_lats, station_lons, station_name, pfx, coords='ll')
+    coords = 'xy'
+    station_lats, station_lons = sonde_in_wrf(profile, wrf, coords=coords)
+    content = generate_tslist(station_lats, station_lons, station_name, pfx, coords=coords)
 
     # write to tslist file as input of WRF TSLIST
     write_tslist(content)
