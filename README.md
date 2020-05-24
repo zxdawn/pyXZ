@@ -8,6 +8,10 @@
 
 Python Scripts in My Meteorological Research Life (2020 - )
 
+- XZ_cmaps
+
+  Personal colormaps
+
 - XZ_flights
 
   Reading and plotting flight data
@@ -20,6 +24,10 @@ Python Scripts in My Meteorological Research Life (2020 - )
 
   Processing emission and model data, especially for WRF-Chem
 
+- XZ_proplot
+
+  Configurations of proplot
+
 - XZ_satpy
 
   Readers, composites, enhancements and scripts for [Satpy](https://github.com/pytroll/satpy)
@@ -27,3 +35,7 @@ Python Scripts in My Meteorological Research Life (2020 - )
 - XZ_sonde
 
   Reading and plotting sonde data
+
+- XZ_sublime
+
+  Configurations of sublime text
