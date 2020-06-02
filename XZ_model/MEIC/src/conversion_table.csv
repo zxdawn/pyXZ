@@ -8,42 +8,42 @@
 #    <SOLID>: 1: SOLID; 0: not SOLID
 #    <MW>: Molecular Weight of species. 1 for species which are VOC and SOLID
 #
-MOZCART     , CB05 , RADM2    , SAPRC99 , SAPRC07, ALL      , WEIGHT , SOLID, VOC, MW
-E_C10H16   , TERP ,          ,         ,        ,          , 1      , 0    , 1  , 1
-E_C2H5OH   , ETOH ,          ,         ,        ,          , 1      , 0    , 1  , 1
-E_MEK      ,      , KET      ,         ,        ,          , 1      , 0    , 1  , 1
-E_BIGALK   ,      , HC5      ,         ,        ,          , 1      , 0    , 1  , 1
-E_C2H4     ,      , OL2      ,         ,        ,          , 1      , 0    , 1  , 1
-E_C2H6     ,      , ETH      ,         ,        ,          , 1      , 0    , 1  , 1
-E_C3H8     ,      , HC3      ,         ,        ,          , 1      , 0    , 1  , 1
-E_CH2O     ,      , HCHO     ,         ,        ,          , 1      , 0    , 1  , 1
-E_CH3CHO   ,      , ALD      ,         ,        ,          , 1      , 0    , 1  , 1
-E_CH3COCH3 ,      , KET      ,         ,        ,          , 1      , 0    , 1  , 1
-E_TOLUENE  ,      , TOL      ,         ,        ,          , 1      , 0    , 1  , 1
-E_ISOP     ,      , ISO      ,         ,        ,          , 1      , 0    , 1  , 1
-E_CH3OH    ,      ,          , MEOH    ,        ,          , 1      , 0    , 1  , 1
-E_C3H6     ,      ,          , OLE1    ,        ,          , 1      , 0    , 1  , 1
-E_BIGENE   ,      ,          , OLE2    ,        ,          , 1      , 0    , 1  , 1
-E_NH3      ,      ,          ,         ,        , NH3      , 1      , 0    , 0  , 17
-E_PM_25    ,      ,          ,         ,        , PM2.5    , 1      , 1    , 0  , 1
-E_PM_10    ,      ,          ,         ,        , PMcoarse , 1      , 1    , 0  , 1
-E_SO2      ,      ,          ,         ,        , SO2      , 1      , 0    , 0  , 64
-E_NO       ,      ,          ,         ,        , NOx      , 1      , 0    , 0  , 46
-E_CO       ,      ,          ,         ,        , CO       , 1      , 0    , 0  , 28
-E_BC       ,      ,          ,         ,        , BC       , 1      , 1    , 0  , 1
-E_OC       ,      ,          ,         ,        , OC       , 1      , 1    , 0  , 1
-#E_APIN     , TERP ,          ,         ,        ,          , 1      , 0    , 1  , 1
-#E_XYLENE   ,      , XYL      ,         ,        ,          , 1      , 0    , 1  , 1
-#E_MVK      ,      ,          , MVK     ,        ,          , 1      , 0    , 1  , 1
-#E_MACR     ,      ,          , MACR    ,        ,          , 1      , 0    , 1  , 1
-#E_BENZENE  ,      ,          ,         , BENZ   ,          , 1      , 0    , 1  , 1
-#E_NO3I     ,      ,          ,         , RNO3   ,          , 0.15   , 0    , 1  , 1
-#E_NO3J     ,      ,          ,         , RNO3   ,          , 0.85   , 0    , 1  , 1
-#E_C2H2     ,      ,          ,         ,        , CO       , 5.87e-3, 0    , 0  , 26
-#E_ECI      ,      ,          ,         ,        , BC       , 0.15   , 1    , 1  , 1
-#E_ECJ      ,      ,          ,         ,        , BC       , 0.85   , 1    , 1  , 1
-#E_OC       ,      ,          ,         ,        , OC       , 1      , 1    , 1  , 1
-#E_ORGI     ,      ,          ,         ,        , OC       , 0.15   , 1    , 1  , 1
-#E_ORGJ     ,      ,          ,         ,        , OC       , 0.85   , 1    , 1  , 1
-#E_CO2      ,      ,          ,         ,        , CO2      , 1      , 0    , 0  , 44
-#E_NO2      ,      ,          ,         ,        , NOx      , 0.1    , 0    , 0  , 46
+MOZCART     , CB05 , RADM2    , SAPRC99 , SAPRC07, ALL           , WEIGHT , SOLID, VOC, MW
+E_C10H16   , TERP ,          ,         ,        ,                , 1      , 0    , 1  , 1
+E_C2H5OH   , ETOH ,          ,         ,        ,                , 1      , 0    , 1  , 1
+E_MEK      ,      , KET      ,         ,        ,                , 1      , 0    , 1  , 1
+E_BIGALK   ,      , HC5      ,         ,        ,                , 1      , 0    , 1  , 1
+E_C2H4     ,      , OL2      ,         ,        ,                , 1      , 0    , 1  , 1
+E_C2H6     ,      , ETH      ,         ,        ,                , 1      , 0    , 1  , 1
+E_C3H8     ,      , HC3      ,         ,        ,                , 1      , 0    , 1  , 1
+E_CH2O     ,      , HCHO     ,         ,        ,                , 1      , 0    , 1  , 1
+E_CH3CHO   ,      , ALD      ,         ,        ,                , 1      , 0    , 1  , 1
+E_CH3COCH3 ,      , KET      ,         ,        ,                , 1      , 0    , 1  , 1
+E_TOLUENE  ,      , TOL      ,         ,        ,                , 1      , 0    , 1  , 1
+E_ISOP     ,      , ISO      ,         ,        ,                , 1      , 0    , 1  , 1
+E_CH3OH    ,      ,          , MEOH    ,        ,                , 1      , 0    , 1  , 1
+E_C3H6     ,      ,          , OLE1    ,        ,                , 1      , 0    , 1  , 1
+E_BIGENE   ,      ,          , OLE2    ,        ,                , 1      , 0    , 1  , 1
+E_NH3      ,      ,          ,         ,        , NH3            , 1      , 0    , 0  , 17
+E_PM_25    ,      ,          ,         ,        , PM2.5          , 1      , 1    , 0  , 1
+E_PM_10    ,      ,          ,         ,        , PMcoarse+PM2.5 , 1      , 1    , 0  , 1
+E_SO2      ,      ,          ,         ,        , SO2            , 1      , 0    , 0  , 64
+E_NO       ,      ,          ,         ,        , NOx            , 1      , 0    , 0  , 46
+E_CO       ,      ,          ,         ,        , CO             , 1      , 0    , 0  , 28
+E_BC       ,      ,          ,         ,        , BC             , 1      , 1    , 0  , 1
+E_OC       ,      ,          ,         ,        , OC             , 1      , 1    , 0  , 1
+#E_APIN     , TERP ,          ,         ,        ,                , 1      , 0    , 1  , 1
+#E_XYLENE   ,      , XYL      ,         ,        ,                , 1      , 0    , 1  , 1
+#E_MVK      ,      ,          , MVK     ,        ,                , 1      , 0    , 1  , 1
+#E_MACR     ,      ,          , MACR    ,        ,                , 1      , 0    , 1  , 1
+#E_BENZENE  ,      ,          ,         , BENZ   ,                , 1      , 0    , 1  , 1
+#E_NO3I     ,      ,          ,         , RNO3   ,                , 0.15   , 0    , 1  , 1
+#E_NO3J     ,      ,          ,         , RNO3   ,                , 0.85   , 0    , 1  , 1
+#E_C2H2     ,      ,          ,         ,        , CO             , 5.87e-3, 0    , 0  , 26
+#E_ECI      ,      ,          ,         ,        , BC             , 0.15   , 1    , 1  , 1
+#E_ECJ      ,      ,          ,         ,        , BC             , 0.85   , 1    , 1  , 1
+#E_OC       ,      ,          ,         ,        , OC             , 1      , 1    , 1  , 1
+#E_ORGI     ,      ,          ,         ,        , OC             , 0.15   , 1    , 1  , 1
+#E_ORGJ     ,      ,          ,         ,        , OC             , 0.85   , 1    , 1  , 1
+#E_CO2      ,      ,          ,         ,        , CO2            , 1      , 0    , 0  , 44
+#E_NO2      ,      ,          ,         ,        , NOx            , 0.1    , 0    , 0  , 46

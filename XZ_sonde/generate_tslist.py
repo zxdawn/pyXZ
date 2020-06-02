@@ -61,7 +61,6 @@ def sonde_in_wrf_pyresample(profile, wps):
 
     # get grid passed by sonde
     wps_lons, wps_lats = wps.area.get_lonlats()
-    print (wps_lons, wps_lats)
     lat_idx,  lon_idx  = np.where(np.asarray(counts) > 5)
     station_lons       = wps_lons[lat_idx, lon_idx]
     station_lats       = wps_lats[lat_idx, lon_idx]
@@ -76,12 +75,12 @@ def sonde_in_wrf(profile, wrf, coords='xy', unique=True):
 
     # convert sonde lon/lat to X/Y
     x_y = ll_to_xy(wrf.ds, profile['lat'], profile['lon']).values
-    
+
     # check noise X/Y
     counts = collections.Counter(x_y[0])
     noise_x = list(x for x, num in counts.items() if num <= 2)
     # pair together
-    x_y = np.stack((x_y[0], x_y[1]), axis=-1) 
+    x_y = np.stack((x_y[0], x_y[1]), axis=-1)
 
     if unique:
         # delete duplicated X/Y
@@ -102,7 +101,7 @@ def sonde_in_wrf(profile, wrf, coords='xy', unique=True):
 
         return lat_lon[0].values, lat_lon[1].values # lat, lon
 
-def generate_tslist(station_lats, station_lons, coords, station_name, pfx_name):
+def generate_tslist(station_lats, station_lons, station_name, pfx_name, coords):
     '''
     Generate the tslist file for WRF running
     Output: tslist content
@@ -136,8 +135,8 @@ def write_tslist(content, filename='tslist.new'):
 
 def main():
     # --------------- input --------------- #
-    wrf_path = '../XZ_model/data/20190725/'
-    wrf_file = 'wrfout_d01_2019-07-25_00_00_00'
+    wrf_path = '../XZ_model/data/wrfchem/'
+    wrf_file = 'wrfout_d01_2019-07-25_05-00-00'
     sonde = './data/ozonesonde/9_201907251434.txt'
     station_name = 'Jiangning'
     pfx = 'JL'
@@ -145,13 +144,13 @@ def main():
     # read data and save to tslist for WRF
     # domain = 'd01'
     # wps = read_wps(wrf_path, domain)
-    wrf = read_wrf(wrf_path, wrf_file, vname=None)
+    wrf = read_wrf(wrf_path, wrf_file)
     profile, _ = read_profile(sonde, smooth=True)
 
     # station_lons, station_lats = sonde_in_wrf_pyresample(profile, wps)
     coords = 'xy'
-    station_lats, station_lons = sonde_in_wrf(profile, wrf, coords)
-    content = generate_tslist(station_lats, station_lons, coords, station_name, pfx)
+    station_lats, station_lons = sonde_in_wrf(profile, wrf, coords=coords)
+    content = generate_tslist(station_lats, station_lons, station_name, pfx, coords=coords)
 
     # write to tslist file as input of WRF TSLIST
     write_tslist(content)

@@ -44,7 +44,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 # --- input --- #
 data_path = '../input_files/'
-output_dir = '../output_files/'
+wrfchemi_dir = '../output_files/'
+output_dir = '../output_files/vito/'
 vito_filename = 'VITO_STD-RES-INVENTORY_EAST-CHINA.nc'
 domain = 'd01'
 resample_method = 'bilinear'  # nearest, bilinear or idw
@@ -60,8 +61,8 @@ minhour = 0
 maxhour = 23
 delta = 1  # unit: hour
 days = monthrange(yyyy, mm)[1]  # get number of days of the month
-chem1 = output_dir+"wrfchemi_00z_d"+domain
-chem2 = output_dir+"wrfchemi_12z_d"+domain
+chem1 = wrfchemi_dir+"wrfchemi_00z_d"+domain
+chem2 = wrfchemi_dir+"wrfchemi_12z_d"+domain
 
 wrf_projs = {1: 'lcc',
              2: 'npstere',
@@ -87,18 +88,19 @@ class vito(object):
         '''
         self.geo = xr.open_dataset(data_path + 'geo_em.'+domain+'.nc')
         attrs = self.geo.attrs
-        i = attrs['i_parent_end']
-        j = attrs['j_parent_end']
+        i = attrs['WEST-EAST_GRID_DIMENSION'] - 1
+        j = attrs['SOUTH-NORTH_GRID_DIMENSION'] -1
 
         # calculate attrs for area definition
         shape = (j, i)
         radius = (i*attrs['DX']/2, j*attrs['DY']/2)
+        self.radius_of_influence = 200e3
 
         # create area as same as WRF
         area_id = 'wrf_circle'
         proj_dict = {'proj': wrf_projs[attrs['MAP_PROJ']],
-                     'lat_0': attrs['MOAD_CEN_LAT'],
-                     'lon_0': attrs['STAND_LON'],
+                     'lat_0': attrs['CEN_LAT'],
+                     'lon_0': attrs['CEN_LON'],
                      'lat_1': attrs['TRUELAT1'],
                      'lat_2': attrs['TRUELAT2'],
                      'a': 6370000,
@@ -109,6 +111,7 @@ class vito(object):
                                                    center,
                                                    radius,
                                                    shape=shape)
+        logging.info(f'Area: {self.area_def}')
 
     def read_vito(self, ):
         '''Read VITO data and convert to species in MOZART'''
@@ -319,7 +322,7 @@ class vito(object):
                                               orig_def,
                                               self.emi[vname][t, :, :].values,
                                               self.area_def,
-                                              radius_of_influence=100000,
+                                              radius_of_influence=self.radius_of_influence,
                                               fill_value=0.)
                                               )
                     elif resample_method == 'idw':
@@ -327,7 +330,7 @@ class vito(object):
                                               orig_def,
                                               self.emi[vname][t, :, :].values,
                                               self.area_def,
-                                              radius_of_influence=100000,
+                                              radius_of_influence=self.radius_of_influence,
                                               neighbours=10,
                                               weight_funcs=lambda r: 1/r**2,
                                               fill_value=0.)
@@ -337,7 +340,7 @@ class vito(object):
                                               self.emi[vname][t, :, :].values,
                                               orig_def,
                                               self.area_def,
-                                              radius=100000,
+                                              radius=self.radius_of_influence,
                                               neighbours=10,
                                               nprocs=4,
                                               reduce_data=True,
@@ -391,7 +394,7 @@ class vito(object):
         tindex = [np.arange(12), np.arange(12, 24, 1)]
 
         # generate files
-        for index, file in enumerate([output_dir+f'wrfchemi_00z_{domain}', output_dir+f'wrfchemi_12z_{domain}']):
+        for index, file in enumerate([wrfchemi_dir+f'wrfchemi_00z_{domain}', wrfchemi_dir+f'wrfchemi_12z_{domain}']):
             if os.path.isfile(file):
                 ds = xr.open_dataset(file)
                 ds['E_NO'] = self.chemi['E_NO'].isel(Time=tindex[index])
@@ -401,8 +404,9 @@ class vito(object):
                 encoding = {var: comp_t if var == 'Times' else comp
                             for var in ds.data_vars}
 
-                logging.info(f'Saving to {file}')
-                ds.to_netcdf(f'{file}',
+                output_file = output_dir+os.path.basename(file)
+                logging.info(f'Saving to {output_file}')
+                ds.to_netcdf(f'{output_file}',
                              format='NETCDF4',
                              encoding=encoding,
                              unlimited_dims={'Time': True}

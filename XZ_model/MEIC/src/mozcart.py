@@ -28,6 +28,7 @@ If you want to apply to other mechanisms, you need to edit:
 '''
 
 import logging
+import warnings
 import os
 from calendar import monthrange
 from datetime import datetime, timedelta
@@ -40,6 +41,7 @@ import xarray as xr
 from pyresample.bilinear import resample_bilinear
 from pyresample.geometry import AreaDefinition, SwathDefinition
 from pyresample.kd_tree import resample_custom, resample_nearest
+warnings.filterwarnings('ignore', category=RuntimeWarning, append=True)
 
 # Choose the following line for info or debugging:
 # logging.basicConfig(level=logging.INFO)
@@ -104,18 +106,19 @@ class meic(object):
         '''
         self.geo = xr.open_dataset(data_path + 'geo_em.'+domain+'.nc')
         attrs = self.geo.attrs
-        i = attrs['i_parent_end']
-        j = attrs['j_parent_end']
+        i = attrs['WEST-EAST_GRID_DIMENSION'] - 1
+        j = attrs['SOUTH-NORTH_GRID_DIMENSION'] - 1
 
         # calculate attrs for area definition
         shape = (j, i)
         radius = (i*attrs['DX']/2, j*attrs['DY']/2)
+        self.radius_of_influence = 200e3
 
         # create area as same as WRF
         area_id = 'wrf_circle'
         proj_dict = {'proj': wrf_projs[attrs['MAP_PROJ']],
-                     'lat_0': attrs['MOAD_CEN_LAT'],
-                     'lon_0': attrs['STAND_LON'],
+                     'lat_0': attrs['CEN_LAT'],
+                     'lon_0': attrs['CEN_LON'],
                      'lat_1': attrs['TRUELAT1'],
                      'lat_2': attrs['TRUELAT2'],
                      'a': 6370000,
@@ -126,6 +129,7 @@ class meic(object):
                                                    center,
                                                    radius,
                                                    shape=shape)
+        logging.info(f'Area: {self.area_def}')
 
     def read_meic(self, ):
         '''
@@ -364,7 +368,7 @@ class meic(object):
                                               orig_def,
                                               self.emi[vname][t, :, :].values,
                                               self.area_def,
-                                              radius_of_influence=100000,
+                                              radius_of_influence=self.radius_of_influence,
                                               fill_value=0.)
                                               )
                     elif resample_method == 'idw':
@@ -372,7 +376,7 @@ class meic(object):
                                               orig_def,
                                               self.emi[vname][t, :, :].values,
                                               self.area_def,
-                                              radius_of_influence=100000,
+                                              radius_of_influence=self.radius_of_influence,
                                               neighbours=10,
                                               weight_funcs=lambda r: 1/r**2,
                                               fill_value=0.)
@@ -382,7 +386,7 @@ class meic(object):
                                               self.emi[vname][t, :, :].values,
                                               orig_def,
                                               self.area_def,
-                                              radius=100000,
+                                              radius=self.radius_of_influence,
                                               neighbours=10,
                                               nprocs=4,
                                               reduce_data=True,
