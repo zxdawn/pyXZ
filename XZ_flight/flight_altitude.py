@@ -15,6 +15,7 @@ import sys
 import numpy as np
 import pandas as pd
 import cartopy.crs as ccrs
+from cartopy.io.img_tiles import StamenTerrain
 import matplotlib.pyplot as plt
 import matplotlib.image as image
 import matplotlib.collections as mcoll
@@ -65,7 +66,7 @@ def multicolored_lines(ax, lon, lat, alt, cmap, linewidth, alpha):
     # norm = plt.Normalize(vmin=alt_min, vmax=alt_max)
     norm = plt.Normalize(vmin=500, vmax=5000)
     lc = colorline(ax, lon, lat, alt, norm, cmap, linewidth, alpha)
-    cbar = plt.colorbar(lc)
+    cbar = plt.colorbar(lc, shrink=0.8, pad=0.1)
     cbar.ax.tick_params(labelsize=12)
     cbar.set_label('Altitude (m)', fontsize=12)
     cbar.ax.yaxis.set_label_position('left')
@@ -97,7 +98,7 @@ def make_segments(x, y):
 
 
 def main():
-    fig = plt.figure(figsize=[12, 12])
+    fig = plt.figure(figsize=[12, 10])
     projection = ccrs.PlateCarree()
     provinces = load_province(projection)
     city = load_city(projection)
@@ -109,7 +110,7 @@ def main():
     ax.imshow(im)
     ax.axis('off')
     ax.annotate("(a)", xy=(0.02, 0.93), xycoords="axes fraction", fontsize=15)
-    ax.set_anchor('W')
+    ax.set_anchor('C')
 
     # ----- subplot2 ----- #
     # ax = fig.add_subplot(222)
@@ -123,6 +124,9 @@ def main():
     south = 35; north = 40; west = 112; east = 118
     lon_d = 1; lat_d = 0.5
     add_map(ax, provinces, west, east, south, north, lon_d, lat_d)
+    # Add terrain background
+    st = StamenTerrain()
+    ax.add_image(st, 8)
 
     ax.plot(114.5, 38.02, 'r*', markersize=10)
     ax.text(114.6, 38.02, 'SJZ', color='red', fontsize=15, fontweight='bold')
@@ -139,6 +143,9 @@ def main():
     south = 37.95; north = 38.4; west = 114.4; east = 114.85
     lon_d = 0.1; lat_d = 0.1
     add_map(ax, county, west, east, south, north, lon_d, lat_d)
+    # Add terrain background
+    st = StamenTerrain()
+    ax.add_image(st, 8)
 
     im = multicolored_lines(ax, lon, lat, alt, cmap='viridis', linewidth=1, alpha=1)
     ax.plot(114.5, 38.02, 'r*', markersize=10)
@@ -154,6 +161,9 @@ def main():
     south = 36.5; north = 38.5; west = 113.5; east = 115.5
     lon_d = 0.5; lat_d = 0.5
     add_map(ax, city, west, east, south, north, lon_d, lat_d)
+    # Add terrain background
+    st = StamenTerrain()
+    ax.add_image(st, 8)
 
     im = multicolored_lines(ax, lon, lat, alt, cmap='viridis', linewidth=1, alpha=1)
     ax.plot(114.38, 37.2, 'r*', markersize=5)
@@ -161,8 +171,9 @@ def main():
     ax.annotate("(d)", xy=(0.02, 0.93), xycoords="axes fraction", fontsize=15)
     ax.set_anchor('W')
 
-    plt.show()
-    # plt.savefig(save_dir+outputname, bbox_inches='tight')
+    # plt.show()
+    plt.subplots_adjust(hspace=0)
+    plt.savefig(save_dir+outputname, bbox_inches='tight')
     # plt.savefig(save_dir+outputname)
 
 if __name__ == '__main__':
