@@ -154,6 +154,30 @@ C:\texlive\2018\tlpkg\tlgs\bin
 }
 ```
 
+### [Latex Tools](https://github.com/SublimeText/LaTeXTools)
+
+```
+	"windows": {
+		// Path used when invoking tex & friends; "" is fine for MiKTeX
+		// For TeXlive 2011 (or other years) use
+		// "texpath" : "C:\\texlive\\2011\\bin\\win32;$PATH",
+		"texpath" : "E:\\texlive_2020\\bin\\win32;$PATH",
+		// TeX distro: "miktex" or "texlive"
+		"distro" : "texlive",
+		// Command to invoke Sumatra. If blank, "SumatraPDF.exe" is used (it has to be on your PATH)
+		"sumatra": "E:\\sumatra\\SumatraPDF",
+		// Command to invoke Sublime Text. Used if the keep_focus toggle is true.
+		// If blank, "subl.exe" or "sublime_text.exe" will be used.
+		"sublime_executable": "",
+		// how long (in seconds) to wait after the jump_to_pdf command completes
+		// before switching focus back to Sublime Text. This may need to be
+		// adjusted depending on your machine and configuration.
+		"keep_focus_delay": 0.5
+	},
+
+     "builder": "simple",
+```
+
 ### [Terminus](https://packagecontrol.io/packages/Terminus)
 
 ### [isort](https://packagecontrol.io/packages/isort)
