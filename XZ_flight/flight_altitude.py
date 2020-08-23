@@ -2,179 +2,138 @@
  INPUT:
     Required:
         IN observation data
+        GEBCO terrain data (NetCDF)
 
  OUTPUT:
     Figure of flight altitude
 
  UPDATE:
    Xin Zhang:
-       03/02/2020: basic
+       08/23/2020: basic
 '''
 
 import sys
-import numpy as np
+import xarray as xr
 import pandas as pd
+from glob import glob
+import proplot as plot
 import cartopy.crs as ccrs
-from cartopy.io.img_tiles import StamenTerrain
 import matplotlib.pyplot as plt
 import matplotlib.image as image
-import matplotlib.collections as mcoll
 
 sys.path.append('../XZ_maps/')
 from xin_cartopy import add_grid, load_province, load_city, load_china_county_level_city
 
-# --------------- set paras --------------- #
-file_1 = './data/0512.xlsx'
-file_2 = './data/1227.xlsx'
-sheet_name = 'Sheet1'
-
-plane = './data/plane.jpg'
-google_map = './data/google_map.jpg'
-
-save_dir = './figures/'
-outputname = 'IN_flight.png'
-
-def add_map(ax, map_data,
-            west, east,
-            south, north,
-            lon_d, lat_d):
-    ax.add_feature(map_data, edgecolor='k', linewidth=.2)
-    add_grid(ax, ccrs.PlateCarree(),
-             west, east,
-             south, north,
-             lon_d, lat_d,
-             xlabel_size=12, ylabel_size=12,
-             grid_color='grey')
 
 def read_file(file, sheet_name):
+    '''Read the flight file'''
     f = pd.read_excel(file, sheet_name=sheet_name)
     # t   = f['CreationTime'].values
     lon = f['Long (deg)'].values
     lat = f['Lat (deg)'].values
-    alt = f['Altitude AIMMS (m)'].values
+    alt = f['Altitude AIMMS (m)'].values/1e3  # km
     Lat_min, Lat_max, Lon_min, Lon_max = lat.min(), lat.max(), lon.min(), lon.max()
 
     return lon, lat, alt, Lat_min, Lat_max, Lon_min, Lon_max
 
-def multicolored_lines(ax, lon, lat, alt, cmap, linewidth, alpha):
-    """
-    http://nbviewer.ipython.org/github/dpsanders/matplotlib-examples/blob/master/colorline.ipynb
-    http://matplotlib.org/examples/pylab_examples/multicolored_line.html
-    """
-    # alt_min = alt.min()
-    # alt_max = alt.max()
-    # norm = plt.Normalize(vmin=alt_min, vmax=alt_max)
-    norm = plt.Normalize(vmin=500, vmax=5000)
-    lc = colorline(ax, lon, lat, alt, norm, cmap, linewidth, alpha)
-    cbar = plt.colorbar(lc, shrink=0.8, pad=0.1)
-    cbar.ax.tick_params(labelsize=12)
-    cbar.set_label('Altitude (m)', fontsize=12)
-    cbar.ax.yaxis.set_label_position('left')
 
-def colorline(ax, lon, lat, alt, norm, cmap, linewidth, alpha):
-    """
-    http://nbviewer.ipython.org/github/dpsanders/matplotlib-examples/blob/master/colorline.ipynb
-    http://matplotlib.org/examples/pylab_examples/multicolored_line.html
-    Plot a colored line with coordinates x and y
-    Optionally specify colors in the array z
-    Optionally specify a colormap, a norm function and a line width
-    """
-    segments = make_segments(lon, lat)
-    lc = mcoll.LineCollection(segments, array=alt, cmap=cmap, norm=norm,
-                              linewidth=linewidth, alpha=alpha)
-    ax.add_collection(lc)
+def plot_terrain(ax, gebco, south, north, west, east,
+                 vmin=None, vmax=None, locator=None, shrink=None):
+    '''Plot the terrain in the cropped region'''
+    crop = (gebco.lat > south) & (gebco.lat < north) & (gebco.lon > west) & (gebco.lon < east)
+    gebco_subset = gebco.where(crop, drop=True)
 
-    return lc
+    m = ax.contourf(gebco_subset.coords['lon'],
+                    gebco_subset.coords['lat'],
+                    gebco_subset['elevation'],
+                    vmin=vmin,
+                    vmax=vmax,
+                    locator=locator,
+                    levels=256,
+                    cmap='Grays'
+                    )
 
-def make_segments(x, y):
-    """
-    Create list of line segments from x and y coordinates, in the correct format
-    for LineCollection: an array of the form numlines x (points per line) x 2 (x
-    and y) array
-    """
-    points = np.array([x, y]).T.reshape(-1, 1, 2)
-    segments = np.concatenate([points[:-1], points[1:]], axis=1)
-    return segments
+    ax.format(lonlim=(west, east),
+              latlim=(south, north),
+              labels=True,
+              dms=False)
+
+    ax.colorbar(m, loc='r', label='Terrain height (m)', shrink=shrink)
 
 
-def main():
-    fig = plt.figure(figsize=[12, 10])
-    projection = ccrs.PlateCarree()
-    provinces = load_province(projection)
-    city = load_city(projection)
-    county = load_china_county_level_city(projection)
+def plot_airline(ax, lon, lat, alt):
+    ax.scatter(lon, lat, color=alt,
+                marker='o',
+                # cmap='magma_r',
+                cmap='plasma_r',
+                size=1,
+                colorbar='b',
+                cmap_kw={'left': 0.1},
+                vmin=0.5,
+                vmax=5,
+                levels=256,
+                colorbar_kw={'label': 'Altitude (km)', 'locator': 0.5}
+                )
 
-    # ----- subplot1 ----- #
-    ax = fig.add_subplot(221)
-    im = image.imread(plane)
-    ax.imshow(im)
-    ax.axis('off')
-    ax.annotate("(a)", xy=(0.02, 0.93), xycoords="axes fraction", fontsize=15)
-    ax.set_anchor('C')
 
-    # ----- subplot2 ----- #
-    # ax = fig.add_subplot(222)
-    # im = image.imread(google_map)
-    # ax.imshow(im)
-    # ax.axis('off')
-    # ax.annotate("(b)", xy=(0.02, 0.93), xycoords="axes fraction", fontsize=15)
-    # ax.set_anchor('W')
+flight_1 = './data/0512.xlsx'
+flight_2 = './data/1227.xlsx'
+sheet_name = 'Sheet1'
 
-    ax = fig.add_subplot(222, projection=projection)
-    south = 35; north = 40; west = 112; east = 118
-    lon_d = 1; lat_d = 0.5
-    add_map(ax, provinces, west, east, south, north, lon_d, lat_d)
-    # Add terrain background
-    st = StamenTerrain()
-    ax.add_image(st, 8)
+# read terrain data
+gebco = xr.open_dataset(glob('../XZ_maps/terrain/GEBCO/gebco*.nc')[0])
+projection = ccrs.PlateCarree()
+provinces = load_province(projection)
+city = load_city(projection)
+county = load_china_county_level_city(projection)
 
-    ax.plot(114.5, 38.02, 'r*', markersize=10)
-    ax.text(114.6, 38.02, 'SJZ', color='red', fontsize=15, fontweight='bold')
-    ax.plot(114.38, 37.2, 'r*', markersize=10)
-    ax.text(114.5, 37.2, 'XT', color='red', fontsize=15, fontweight='bold')
-    ax.annotate("(b)", xy=(0.02, 0.93), xycoords="axes fraction", fontsize=15)
-    ax.set_anchor('W')
+# plot
+fig, axs = plot.subplots(proj=(None, 'pcarree', 'pcarree', 'pcarree'),
+                         nrows=2, ncols=2)
+axs.format(abc=True, abcloc='ul', abcstyle='(a)', tight=True)
 
-    # ----- subplot3 ----- #
-    ax = fig.add_subplot(223, projection=projection)
-    file = file_1
-    sheet_name = 'Sheet1'
-    lon, lat, alt, south, north, west, east = read_file(file, sheet_name)
-    south = 37.95; north = 38.4; west = 114.4; east = 114.85
-    lon_d = 0.1; lat_d = 0.1
-    add_map(ax, county, west, east, south, north, lon_d, lat_d)
-    # Add terrain background
-    st = StamenTerrain()
-    ax.add_image(st, 8)
+# ----- subplot1 ----- #
+ax = axs[0]
+plane = './data/plane.jpg'
+im = image.imread(plane)
+ax.imshow(im)
+ax.axis('off')
 
-    im = multicolored_lines(ax, lon, lat, alt, cmap='viridis', linewidth=1, alpha=1)
-    ax.plot(114.5, 38.02, 'r*', markersize=10)
-    ax.text(114.6, 38.02, 'SJZ', color='red', fontsize=15, fontweight='bold')
-    ax.annotate("(c)", xy=(0.02, 0.93), xycoords="axes fraction", fontsize=15)
-    ax.set_anchor('W')
+# --- subplot 2 ---
+ax = axs[1]
+south = 35; north = 40; west = 112; east = 118
+plot_terrain(ax, gebco, south, north, west, east,
+             vmin=0, vmax=3000, locator=600, shrink=0.85)
+ax.add_feature(provinces, edgecolor='k', linewidth=.2)
 
-    # ----- subplot4 ----- #
-    ax = fig.add_subplot(224, projection=projection)
-    file = file_2
-    sheet_name = 'Sheet1'
-    lon, lat, alt, south, north, west, east = read_file(file, sheet_name)
-    south = 36.5; north = 38.5; west = 113.5; east = 115.5
-    lon_d = 0.5; lat_d = 0.5
-    add_map(ax, city, west, east, south, north, lon_d, lat_d)
-    # Add terrain background
-    st = StamenTerrain()
-    ax.add_image(st, 8)
+ax.plot(114.5, 38.02, 'r*', markersize=5)
+ax.text(114.6, 38.02, 'SJZ', color='red', fontsize=10, fontweight='bold')
+ax.plot(114.38, 37.2, 'r*', markersize=5)
+ax.text(114.5, 37.2, 'XT', color='red', fontsize=10, fontweight='bold')
 
-    im = multicolored_lines(ax, lon, lat, alt, cmap='viridis', linewidth=1, alpha=1)
-    ax.plot(114.38, 37.2, 'r*', markersize=5)
-    ax.text(114.5, 37.2, 'XT', color='red', fontsize=15, fontweight='bold')
-    ax.annotate("(d)", xy=(0.02, 0.93), xycoords="axes fraction", fontsize=15)
-    ax.set_anchor('W')
 
-    # plt.show()
-    plt.subplots_adjust(hspace=0)
-    plt.savefig(save_dir+outputname, bbox_inches='tight')
-    # plt.savefig(save_dir+outputname)
+# --- subplot 3 ---
+ax = axs[2]
+lon, lat, alt, south, north, west, east = read_file(flight_1, sheet_name)
+south = 37.95; north = 38.4; west = 114.4; east = 114.85
+ax.add_feature(county, edgecolor='k', linewidth=.2)
+plot_terrain(ax, gebco, south, north, west, east,
+             vmin=40, vmax=140, locator=20)
+plot_airline(ax, lon, lat, alt)
 
-if __name__ == '__main__':
-    main()
+# ax.plot(114.5, 38.02, 'r*', markersize=5)
+ax.text(114.6, 38.02, 'SJZ', color='red', fontsize=10, fontweight='bold')
+
+# --- subplot 4 ---
+ax = axs[3]
+lon, lat, alt, south, north, west, east = read_file(flight_2, sheet_name)
+south = 36.5; north = 38.5; west = 113.5; east = 115.5
+ax.add_feature(city, edgecolor='k', linewidth=.2)
+plot_terrain(ax, gebco, south, north, west, east,
+             vmin=0, vmax=2000, locator=500)
+plot_airline(ax, lon, lat, alt)
+
+# ax.plot(114.38, 37.2, 'r*', markersize=3)
+ax.text(114.5, 37.2, 'XT', color='red', fontsize=10, fontweight='bold')
+
+fig.savefig('./figures/IN_flight.png')
