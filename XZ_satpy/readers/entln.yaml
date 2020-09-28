@@ -1,0 +1,60 @@
+reader:
+  description: Earth Networks Total Lightning Network Dataset reader
+  name: entln
+  reader: !!python/name:satpy.readers.yaml_reader.FileYAMLReader ''
+  sensors: [entln]
+
+file_types:
+  entln:
+    file_reader: !!python/name:satpy.readers.entln.ENTLNFileHandler ''
+    file_patterns: ['LtgFlashPortions{date:%Y%m%d}.csv']
+
+datasets:
+  datetime:
+    name: datetime
+    sensor: entln
+    file_type: entln
+
+  latitude:
+    name: latitude
+    sensor: entln
+    file_type: entln
+    standard_name: latitude
+    units: degree_north
+
+  longitude:
+    name: longitude
+    sensor: entln
+    file_type: entln
+    standard_name: longitude
+    units: degree_east
+
+  type:
+    name: type
+    sensor: entln
+    file_type: entln
+    coordinates:
+      - longitude
+      - latitude
+    units: "1"
+    standard_name: type
+
+  timestamp:
+    name: timestamp
+    sensor: entln
+    file_type: entln
+    coordinates:
+      - longitude
+      - latitude
+    standard_name: timestamp
+
+#  peakcurrent:
+#    name: peakcurrent
+#    sensor: entln
+#    resolution: 2000
+#    file_type: entln
+#    coordinates:
+#      - longitude
+#      - latitude
+#    units: kA
+#    standard_name: peakcurrent
